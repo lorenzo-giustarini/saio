@@ -1,0 +1,55 @@
+{
+  "page_title": "Cuentas de proveedor",
+  "page_subtitle": "Gestiona tus cuentas de IA (Claude, OpenAI, Google, fal.ai…).",
+  "new_button": "+ Añadir cuenta",
+  "auto_detected_badge": "Detectada automáticamente",
+  "active_badge": "Activa",
+  "list": {
+    "label": "Etiqueta",
+    "provider": "Proveedor",
+    "type": "Tipo",
+    "status": "Estado",
+    "last_used": "Último uso",
+    "actions": "Acciones"
+  },
+  "providers": {
+    "anthropic": "Anthropic",
+    "openai": "OpenAI",
+    "google": "Google",
+    "fal": "fal.ai",
+    "custom": "Personalizado"
+  },
+  "types": {
+    "plan": "Plan de suscripción",
+    "api_key": "Clave API",
+    "oauth": "OAuth"
+  },
+  "create_dialog": {
+    "title": "Añadir cuenta",
+    "label_label": "Etiqueta",
+    "label_placeholder": "p. ej. Claude Trabajo",
+    "provider_label": "Proveedor",
+    "type_label": "Tipo",
+    "api_key_label": "Clave API",
+    "api_key_placeholder": "Pega tu clave API…",
+    "api_key_hint": "Se guardará cifrada en tu disco.",
+    "submit": "Añadir cuenta",
+    "submitting": "Añadiendo…"
+  },
+  "actions": {
+    "set_active": "Marcar como activa",
+    "edit": "Editar",
+    "rotate": "Rotar clave",
+    "delete": "Eliminar"
+  },
+  "delete_dialog": {
+    "title": "¿Eliminar esta cuenta?",
+    "body": "La cuenta se elimina y las claves cifradas se borran del disco. Esta acción no se puede deshacer."
+  },
+  "errors": {
+    "duplicate_label": "Ya existe una cuenta con esta etiqueta.",
+    "invalid_api_key": "Clave API no válida.",
+    "create_failed": "No se pudo añadir la cuenta.",
+    "delete_failed": "No se pudo eliminar la cuenta."
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "page_title": "Account provider",
+  "page_subtitle": "Gestisci i tuoi account AI (Claude, OpenAI, Google, fal.ai…).",
+  "new_button": "+ Aggiungi account",
+  "auto_detected_badge": "Rilevato automaticamente",
+  "active_badge": "Attivo",
+  "list": {
+    "label": "Etichetta",
+    "provider": "Provider",
+    "type": "Tipo",
+    "status": "Stato",
+    "last_used": "Ultimo uso",
+    "actions": "Azioni"
+  },
+  "providers": {
+    "anthropic": "Anthropic",
+    "openai": "OpenAI",
+    "google": "Google",
+    "fal": "fal.ai",
+    "custom": "Personalizzato"
+  },
+  "types": {
+    "plan": "Piano abbonamento",
+    "api_key": "API Key",
+    "oauth": "OAuth"
+  },
+  "create_dialog": {
+    "title": "Aggiungi account",
+    "label_label": "Etichetta",
+    "label_placeholder": "es. Claude Lavoro",
+    "provider_label": "Provider",
+    "type_label": "Tipo",
+    "api_key_label": "API Key",
+    "api_key_placeholder": "Incolla la tua API key…",
+    "api_key_hint": "Verrà salvata cifrata sul tuo disco.",
+    "submit": "Aggiungi account",
+    "submitting": "Aggiunta in corso…"
+  },
+  "actions": {
+    "set_active": "Imposta come attivo",
+    "edit": "Modifica",
+    "rotate": "Ruota chiave",
+    "delete": "Elimina"
+  },
+  "delete_dialog": {
+    "title": "Elimina account?",
+    "body": "L'account verrà rimosso. Le chiavi cifrate verranno cancellate dal disco. Questa azione non può essere annullata."
+  },
+  "errors": {
+    "duplicate_label": "Un account con questa etichetta esiste già.",
+    "invalid_api_key": "API key non valida.",
+    "create_failed": "Creazione account fallita.",
+    "delete_failed": "Eliminazione fallita."
+  }
+}

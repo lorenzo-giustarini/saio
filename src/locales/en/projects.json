@@ -1,0 +1,59 @@
+{
+  "page_title": "Projects",
+  "page_subtitle": "All your AI projects in one place.",
+  "new_button": "+ New project",
+  "empty_title": "No projects yet",
+  "empty_body": "Create your first project to start orchestrating a Claude / Codex / Gemini terminal with a dedicated brief.",
+  "card": {
+    "active": "Active",
+    "archived": "Archived",
+    "open_terminal": "Open terminal",
+    "edit": "Edit",
+    "archive": "Archive",
+    "restore": "Restore",
+    "delete": "Delete",
+    "last_active": "Last active: {{time}}",
+    "no_activity": "No activity yet",
+    "tasks_count": "{{count}} tasks"
+  },
+  "create_dialog": {
+    "title": "New project",
+    "name_label": "Name",
+    "name_placeholder": "e.g. Client X branding",
+    "name_hint": "Letters, numbers, hyphens, and underscores only.",
+    "brief_label": "Brief / initial context",
+    "brief_placeholder": "Describe what the AI should do in this project…",
+    "provider_label": "AI provider",
+    "provider_hint": "The AI CLI will start with the active provider. You can change it later.",
+    "submit": "Create project",
+    "submitting": "Creating…"
+  },
+  "edit_dialog": {
+    "title": "Edit project",
+    "submit": "Save changes"
+  },
+  "archive_dialog": {
+    "title": "Archive this project?",
+    "body": "The project moves to the archive. You can restore it any time. The files stay on disk."
+  },
+  "delete_dialog": {
+    "title": "Delete this project for good?",
+    "body": "This action can't be undone. Metadata, tasks, and logs will be removed.",
+    "type_to_confirm": "Type <strong>DELETE</strong> to confirm"
+  },
+  "terminal": {
+    "open_label": "Open terminal",
+    "spawning": "Starting terminal…",
+    "spawn_failed": "Couldn't start the terminal. Make sure the {{cli}} CLI is installed.",
+    "close": "Close terminal",
+    "fullscreen": "Fullscreen",
+    "exit_fullscreen": "Exit fullscreen",
+    "mobile_back": "Back to Projects"
+  },
+  "errors": {
+    "name_taken": "A project with this name already exists.",
+    "create_failed": "Couldn't create the project.",
+    "archive_failed": "Couldn't archive the project.",
+    "delete_failed": "Couldn't delete the project."
+  }
+}

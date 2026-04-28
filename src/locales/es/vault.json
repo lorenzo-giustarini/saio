@@ -1,0 +1,20 @@
+{
+  "page_title": "Docs / Vault",
+  "page_subtitle": "Navega tu vault de Obsidian como documentación viva.",
+  "vault_path_label": "Ruta del vault",
+  "vault_not_configured_title": "Vault no configurado",
+  "vault_not_configured_body": "Define <code>VAULT_PATH</code> en tu .env o elige una carpeta abajo para activar el renderizador.",
+  "choose_folder": "Elegir carpeta",
+  "search_placeholder": "Buscar en el vault…",
+  "no_results": "Sin resultados.",
+  "file_tree": {
+    "expand_all": "Expandir todo",
+    "collapse_all": "Plegar todo",
+    "filter": "Filtrar…"
+  },
+  "preview": {
+    "loading": "Cargando documento…",
+    "not_markdown": "Tipo de archivo no compatible para vista previa.",
+    "open_external": "Abrir externamente"
+  }
+}

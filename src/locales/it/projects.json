@@ -1,0 +1,59 @@
+{
+  "page_title": "Progetti",
+  "page_subtitle": "Tutti i tuoi progetti AI in un posto.",
+  "new_button": "+ Nuovo progetto",
+  "empty_title": "Nessun progetto",
+  "empty_body": "Crea il tuo primo progetto per iniziare a orchestrare un terminale Claude/Codex/Gemini con un brief dedicato.",
+  "card": {
+    "active": "Attivo",
+    "archived": "Archiviato",
+    "open_terminal": "Apri terminale",
+    "edit": "Modifica",
+    "archive": "Archivia",
+    "restore": "Ripristina",
+    "delete": "Elimina",
+    "last_active": "Ultima attività: {{time}}",
+    "no_activity": "Nessuna attività",
+    "tasks_count": "{{count}} task"
+  },
+  "create_dialog": {
+    "title": "Nuovo progetto",
+    "name_label": "Nome",
+    "name_placeholder": "es. Branding Cliente X",
+    "name_hint": "Solo lettere, numeri, trattini e underscore.",
+    "brief_label": "Brief / contesto iniziale",
+    "brief_placeholder": "Descrivi cosa deve fare l'AI in questo progetto…",
+    "provider_label": "Provider AI",
+    "provider_hint": "L'AI CLI verrà avviata col provider attivo. Puoi cambiarlo dopo.",
+    "submit": "Crea progetto",
+    "submitting": "Creazione…"
+  },
+  "edit_dialog": {
+    "title": "Modifica progetto",
+    "submit": "Salva modifiche"
+  },
+  "archive_dialog": {
+    "title": "Archivia progetto?",
+    "body": "Il progetto verrà spostato in archivio. Potrai ripristinarlo in qualsiasi momento. I file rimangono sul disco."
+  },
+  "delete_dialog": {
+    "title": "Elimina progetto definitivamente?",
+    "body": "Questa azione non può essere annullata. Verranno cancellati metadata, task associati e log.",
+    "type_to_confirm": "Digita <strong>DELETE</strong> per confermare"
+  },
+  "terminal": {
+    "open_label": "Apri terminale",
+    "spawning": "Avvio terminale…",
+    "spawn_failed": "Impossibile avviare il terminale. Verifica che il CLI {{cli}} sia installato.",
+    "close": "Chiudi terminale",
+    "fullscreen": "Schermo intero",
+    "exit_fullscreen": "Esci da schermo intero",
+    "mobile_back": "Torna a Progetti"
+  },
+  "errors": {
+    "name_taken": "Esiste già un progetto con questo nome.",
+    "create_failed": "Creazione progetto fallita.",
+    "archive_failed": "Archiviazione fallita.",
+    "delete_failed": "Eliminazione fallita."
+  }
+}

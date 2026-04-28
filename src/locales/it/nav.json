@@ -1,0 +1,30 @@
+{
+  "sidebar": {
+    "inbox": "Inbox",
+    "tasks": "Task attivi",
+    "projects": "Progetti",
+    "docs": "Docs / Vault",
+    "deep_research": "Deep Research",
+    "automations": "Automazioni",
+    "cron": "Cron",
+    "archive": "Archivio",
+    "metrics": "Metriche",
+    "extras": "Extra",
+    "accounts": "Account",
+    "settings": "Impostazioni"
+  },
+  "header": {
+    "active_account": "Account attivo",
+    "switch_account": "Cambia account",
+    "no_account": "Nessun account attivo",
+    "menu": "Menu",
+    "language_switcher": "Lingua",
+    "open_devtools": "Apri DevTools",
+    "search_placeholder": "Cerca progetti, task, cron…"
+  },
+  "mobile": {
+    "open_menu": "Apri menu",
+    "close_menu": "Chiudi menu",
+    "back": "Indietro"
+  }
+}

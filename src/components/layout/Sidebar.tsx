@@ -1,5 +1,6 @@
 import { NavLink, useLocation } from 'react-router-dom'
 import { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
 import { useMe, useLogout } from '@/hooks/useAuth'
 import { LogOut, UserCog, Globe, ScanLine } from 'lucide-react'
@@ -62,20 +63,21 @@ async function fetchPtySessions(): Promise<{ sessions: PtySessionInfo[] }> {
 }
 
 const navItems = [
-  { to: '/inbox', label: 'Inbox', icon: Inbox, badge: true },
-  { to: '/tasks', label: 'Task attivi', icon: ListChecks },
-  { to: '/projects', label: 'Progetti', icon: FolderKanban },
-  { to: '/docs', label: 'Docs / Vault', icon: BookOpen },
-  { to: '/deep-research', label: 'Deep Research', icon: Microscope },
-  { to: '/cron', label: 'Automazioni', icon: Clock },
-  { to: '/archive', label: 'Archivio', icon: Archive },
-  { to: '/metrics', label: 'Metriche', icon: BarChart3 },
-  { to: '/extras', label: 'Extras', icon: Wand2 },
-]
+  { to: '/inbox', i18nKey: 'sidebar.inbox', icon: Inbox, badge: true },
+  { to: '/tasks', i18nKey: 'sidebar.tasks', icon: ListChecks },
+  { to: '/projects', i18nKey: 'sidebar.projects', icon: FolderKanban },
+  { to: '/docs', i18nKey: 'sidebar.docs', icon: BookOpen },
+  { to: '/deep-research', i18nKey: 'sidebar.deep_research', icon: Microscope },
+  { to: '/cron', i18nKey: 'sidebar.automations', icon: Clock },
+  { to: '/archive', i18nKey: 'sidebar.archive', icon: Archive },
+  { to: '/metrics', i18nKey: 'sidebar.metrics', icon: BarChart3 },
+  { to: '/extras', i18nKey: 'sidebar.extras', icon: Wand2 },
+] as const
 
 const COLLAPSE_KEY = 'saio-sidebar-collapsed'
 
 export function Sidebar() {
+  const { t } = useTranslation('nav')
   // V14.19 — collapsible desktop con persistenza localStorage
   const [collapsed, setCollapsed] = useState<boolean>(() => {
     try {
@@ -138,10 +140,11 @@ export function Sidebar() {
                   ? 'text-muted-foreground'
                   : 'text-muted-foreground border-l-2 border-transparent'
               )
+              const label = t(item.i18nKey)
               const link = (
                 <NavLink to={item.to} className={linkClass}>
                   <item.icon className="w-4 h-4 shrink-0" />
-                  {!collapsed && <span className="truncate">{item.label}</span>}
+                  {!collapsed && <span className="truncate">{label}</span>}
                 </NavLink>
               )
               if (collapsed) {
@@ -149,7 +152,7 @@ export function Sidebar() {
                   <Tooltip key={item.to}>
                     <TooltipTrigger asChild>{link}</TooltipTrigger>
                     <TooltipContent side="right" className="text-xs">
-                      {item.label}
+                      {label}
                     </TooltipContent>
                   </Tooltip>
                 )

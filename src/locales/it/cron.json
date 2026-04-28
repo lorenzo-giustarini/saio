@@ -1,0 +1,66 @@
+{
+  "page_title": "Cron",
+  "page_subtitle": "Task pianificati nativi del sistema operativo.",
+  "scheduler_label": {
+    "windows": "Windows Task Scheduler",
+    "linux": "systemd-timer (utente)",
+    "macos": "launchd (LaunchAgents)"
+  },
+  "new_button": "+ Nuovo cron",
+  "empty_title": "Nessun cron registrato",
+  "empty_body": "Crea il tuo primo cron per pianificare task ricorrenti (backup, report, retry pipeline).",
+  "list": {
+    "name": "Nome",
+    "schedule": "Schedule",
+    "command": "Comando",
+    "status": "Stato",
+    "last_run": "Ultima esecuzione",
+    "next_run": "Prossima esecuzione",
+    "actions": "Azioni"
+  },
+  "actions": {
+    "enable": "Abilita",
+    "disable": "Disabilita",
+    "run_now": "Esegui ora",
+    "edit": "Modifica",
+    "delete": "Elimina",
+    "view_logs": "Vedi log"
+  },
+  "create_dialog": {
+    "title": "Nuovo cron",
+    "name_label": "Nome",
+    "name_placeholder": "es. Vault-Backup-Daily",
+    "name_hint": "Solo lettere, numeri, trattini, underscore.",
+    "schedule_type_label": "Frequenza",
+    "schedule_daily": "Ogni giorno",
+    "schedule_weekly": "Ogni settimana",
+    "schedule_monthly": "Ogni mese",
+    "schedule_once": "Una sola volta",
+    "time_label": "Ora",
+    "time_placeholder": "HH:MM",
+    "day_of_week_label": "Giorno della settimana",
+    "day_of_month_label": "Giorno del mese",
+    "command_label": "Comando",
+    "command_placeholder": "es. & \"$env:USERPROFILE\\scripts\\run.ps1\" oppure /home/user/scripts/run.sh",
+    "command_hint": "Comando shell che verrà eseguito dal task scheduler nativo.",
+    "description_label": "Descrizione (opzionale)",
+    "submit": "Crea cron",
+    "submitting": "Creazione…"
+  },
+  "delete_dialog": {
+    "title": "Elimina cron?",
+    "body": "Il task verrà rimosso dal task scheduler nativo. Questa azione non può essere annullata."
+  },
+  "toggle_uac_warning": {
+    "title": "Popup UAC inatteso",
+    "body": "Il toggle dovrebbe essere zero-UAC. Se vedi questo popup, il task elevator non è registrato. Su Windows: lancia <code>scripts\\register-elevator.ps1</code> da PowerShell admin."
+  },
+  "errors": {
+    "create_failed": "Creazione cron fallita.",
+    "toggle_failed": "Impossibile cambiare stato del cron.",
+    "delete_failed": "Eliminazione fallita.",
+    "run_failed": "Esecuzione fallita: {{error}}",
+    "name_invalid": "Il nome contiene caratteri non validi.",
+    "command_required": "Inserisci un comando."
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "page_title": "Provider accounts",
+  "page_subtitle": "Manage your AI accounts (Claude, OpenAI, Google, fal.ai…).",
+  "new_button": "+ Add account",
+  "auto_detected_badge": "Auto-detected",
+  "active_badge": "Active",
+  "list": {
+    "label": "Label",
+    "provider": "Provider",
+    "type": "Type",
+    "status": "Status",
+    "last_used": "Last used",
+    "actions": "Actions"
+  },
+  "providers": {
+    "anthropic": "Anthropic",
+    "openai": "OpenAI",
+    "google": "Google",
+    "fal": "fal.ai",
+    "custom": "Custom"
+  },
+  "types": {
+    "plan": "Subscription plan",
+    "api_key": "API key",
+    "oauth": "OAuth"
+  },
+  "create_dialog": {
+    "title": "Add account",
+    "label_label": "Label",
+    "label_placeholder": "e.g. Claude Work",
+    "provider_label": "Provider",
+    "type_label": "Type",
+    "api_key_label": "API key",
+    "api_key_placeholder": "Paste your API key…",
+    "api_key_hint": "It will be stored encrypted on your disk.",
+    "submit": "Add account",
+    "submitting": "Adding…"
+  },
+  "actions": {
+    "set_active": "Set as active",
+    "edit": "Edit",
+    "rotate": "Rotate key",
+    "delete": "Delete"
+  },
+  "delete_dialog": {
+    "title": "Delete this account?",
+    "body": "The account will be removed and the encrypted keys wiped from disk. This action can't be undone."
+  },
+  "errors": {
+    "duplicate_label": "An account with this label already exists.",
+    "invalid_api_key": "Invalid API key.",
+    "create_failed": "Couldn't add the account.",
+    "delete_failed": "Couldn't delete the account."
+  }
+}

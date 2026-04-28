@@ -1,0 +1,54 @@
+{
+  "page_title": "Settings",
+  "page_subtitle": "Tailor SAIO to your preferences.",
+  "sections": {
+    "general": "General",
+    "appearance": "Appearance",
+    "language": "Language",
+    "auth": "Security",
+    "advanced": "Advanced"
+  },
+  "general": {
+    "data_dir_label": "Data folder",
+    "data_dir_hint": "Where SAIO stores accounts, projects, and tasks. Changing this requires a restart.",
+    "vault_path_label": "Obsidian vault path",
+    "vault_path_hint": "Optional. Only needed for the Vault renderer."
+  },
+  "appearance": {
+    "theme_label": "Theme",
+    "theme_dark": "Dark",
+    "theme_light": "Light",
+    "theme_system": "System",
+    "compact_mode": "Compact mode",
+    "compact_mode_hint": "Tightens padding and font sizes."
+  },
+  "language": {
+    "title": "Interface language",
+    "subtitle": "Choose SAIO's language. Magic-link emails will be sent in the same language.",
+    "auto_detect": "Auto-detect from browser",
+    "manual_select": "Pick manually"
+  },
+  "auth": {
+    "session_timeout_label": "Session timeout",
+    "session_timeout_15": "15 minutes",
+    "session_timeout_60": "1 hour",
+    "session_timeout_240": "4 hours",
+    "session_timeout_1440": "24 hours",
+    "rotate_jwt_secret": "Rotate JWT secret",
+    "rotate_jwt_warning": "All connected devices will be signed out.",
+    "totp_reset": "Reset TOTP",
+    "totp_reset_warning": "You'll need to re-scan the QR code with your authenticator app.",
+    "recovery_codes": "Recovery codes",
+    "regenerate_recovery": "Regenerate codes"
+  },
+  "advanced": {
+    "logs_path_label": "Logs folder",
+    "open_logs": "Open logs folder",
+    "telemetry_label": "Telemetry",
+    "telemetry_hint": "Disabled in SAIO. No data leaves your machine.",
+    "version_label": "SAIO version",
+    "check_updates": "Check for updates"
+  },
+  "saved": "Settings saved.",
+  "save_failed": "Couldn't save the settings."
+}

@@ -1,0 +1,59 @@
+{
+  "page_title": "Proyectos",
+  "page_subtitle": "Todos tus proyectos de IA en un mismo sitio.",
+  "new_button": "+ Nuevo proyecto",
+  "empty_title": "Aún no hay proyectos",
+  "empty_body": "Crea tu primer proyecto para empezar a orquestar un terminal Claude / Codex / Gemini con un brief dedicado.",
+  "card": {
+    "active": "Activo",
+    "archived": "Archivado",
+    "open_terminal": "Abrir terminal",
+    "edit": "Editar",
+    "archive": "Archivar",
+    "restore": "Restaurar",
+    "delete": "Eliminar",
+    "last_active": "Última actividad: {{time}}",
+    "no_activity": "Sin actividad",
+    "tasks_count": "{{count}} tareas"
+  },
+  "create_dialog": {
+    "title": "Nuevo proyecto",
+    "name_label": "Nombre",
+    "name_placeholder": "p. ej. Branding Cliente X",
+    "name_hint": "Solo letras, números, guiones y guiones bajos.",
+    "brief_label": "Brief / contexto inicial",
+    "brief_placeholder": "Describe qué debe hacer la IA en este proyecto…",
+    "provider_label": "Proveedor de IA",
+    "provider_hint": "El CLI de IA arrancará con el proveedor activo. Puedes cambiarlo después.",
+    "submit": "Crear proyecto",
+    "submitting": "Creando…"
+  },
+  "edit_dialog": {
+    "title": "Editar proyecto",
+    "submit": "Guardar cambios"
+  },
+  "archive_dialog": {
+    "title": "¿Archivar este proyecto?",
+    "body": "El proyecto se mueve al archivo. Puedes restaurarlo en cualquier momento. Los archivos siguen en disco."
+  },
+  "delete_dialog": {
+    "title": "¿Eliminar este proyecto definitivamente?",
+    "body": "Esta acción no se puede deshacer. Se borrarán metadatos, tareas asociadas y logs.",
+    "type_to_confirm": "Escribe <strong>DELETE</strong> para confirmar"
+  },
+  "terminal": {
+    "open_label": "Abrir terminal",
+    "spawning": "Arrancando terminal…",
+    "spawn_failed": "No se pudo arrancar el terminal. Asegúrate de que el CLI {{cli}} esté instalado.",
+    "close": "Cerrar terminal",
+    "fullscreen": "Pantalla completa",
+    "exit_fullscreen": "Salir de pantalla completa",
+    "mobile_back": "Volver a Proyectos"
+  },
+  "errors": {
+    "name_taken": "Ya existe un proyecto con este nombre.",
+    "create_failed": "No se pudo crear el proyecto.",
+    "archive_failed": "No se pudo archivar el proyecto.",
+    "delete_failed": "No se pudo eliminar el proyecto."
+  }
+}

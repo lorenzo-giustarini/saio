@@ -1,0 +1,66 @@
+{
+  "page_title": "Cron",
+  "page_subtitle": "Native scheduled tasks via your operating system.",
+  "scheduler_label": {
+    "windows": "Windows Task Scheduler",
+    "linux": "systemd-timer (user)",
+    "macos": "launchd (LaunchAgents)"
+  },
+  "new_button": "+ New cron",
+  "empty_title": "No cron jobs yet",
+  "empty_body": "Create your first cron to schedule recurring tasks (vault backup, weekly report, pipeline retry).",
+  "list": {
+    "name": "Name",
+    "schedule": "Schedule",
+    "command": "Command",
+    "status": "Status",
+    "last_run": "Last run",
+    "next_run": "Next run",
+    "actions": "Actions"
+  },
+  "actions": {
+    "enable": "Enable",
+    "disable": "Disable",
+    "run_now": "Run now",
+    "edit": "Edit",
+    "delete": "Delete",
+    "view_logs": "View logs"
+  },
+  "create_dialog": {
+    "title": "New cron",
+    "name_label": "Name",
+    "name_placeholder": "e.g. Vault-Backup-Daily",
+    "name_hint": "Letters, numbers, hyphens, underscores only.",
+    "schedule_type_label": "Frequency",
+    "schedule_daily": "Daily",
+    "schedule_weekly": "Weekly",
+    "schedule_monthly": "Monthly",
+    "schedule_once": "Once",
+    "time_label": "Time",
+    "time_placeholder": "HH:MM",
+    "day_of_week_label": "Day of the week",
+    "day_of_month_label": "Day of the month",
+    "command_label": "Command",
+    "command_placeholder": "e.g. & \"$env:USERPROFILE\\scripts\\run.ps1\" or /home/user/scripts/run.sh",
+    "command_hint": "Shell command the native task scheduler will run.",
+    "description_label": "Description (optional)",
+    "submit": "Create cron",
+    "submitting": "Creating…"
+  },
+  "delete_dialog": {
+    "title": "Delete this cron?",
+    "body": "The task is removed from the native scheduler. This action can't be undone."
+  },
+  "toggle_uac_warning": {
+    "title": "Unexpected UAC prompt",
+    "body": "Toggle should be UAC-free. If you see this prompt, the elevator task isn't registered. On Windows, run <code>scripts\\register-elevator.ps1</code> from an admin PowerShell."
+  },
+  "errors": {
+    "create_failed": "Couldn't create the cron.",
+    "toggle_failed": "Couldn't change the cron's state.",
+    "delete_failed": "Couldn't delete the cron.",
+    "run_failed": "Run failed: {{error}}",
+    "name_invalid": "The name contains invalid characters.",
+    "command_required": "Please enter a command."
+  }
+}

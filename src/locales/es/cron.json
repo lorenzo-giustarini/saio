@@ -1,0 +1,66 @@
+{
+  "page_title": "Cron",
+  "page_subtitle": "Tareas programadas nativas del sistema operativo.",
+  "scheduler_label": {
+    "windows": "Programador de tareas de Windows",
+    "linux": "systemd-timer (usuario)",
+    "macos": "launchd (LaunchAgents)"
+  },
+  "new_button": "+ Nuevo cron",
+  "empty_title": "Aún no hay cron",
+  "empty_body": "Crea tu primer cron para programar tareas recurrentes (backup del vault, informe semanal, reintento de pipeline).",
+  "list": {
+    "name": "Nombre",
+    "schedule": "Programación",
+    "command": "Comando",
+    "status": "Estado",
+    "last_run": "Última ejecución",
+    "next_run": "Próxima ejecución",
+    "actions": "Acciones"
+  },
+  "actions": {
+    "enable": "Habilitar",
+    "disable": "Deshabilitar",
+    "run_now": "Ejecutar ahora",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "view_logs": "Ver logs"
+  },
+  "create_dialog": {
+    "title": "Nuevo cron",
+    "name_label": "Nombre",
+    "name_placeholder": "p. ej. Vault-Backup-Daily",
+    "name_hint": "Solo letras, números, guiones y guiones bajos.",
+    "schedule_type_label": "Frecuencia",
+    "schedule_daily": "Diaria",
+    "schedule_weekly": "Semanal",
+    "schedule_monthly": "Mensual",
+    "schedule_once": "Una sola vez",
+    "time_label": "Hora",
+    "time_placeholder": "HH:MM",
+    "day_of_week_label": "Día de la semana",
+    "day_of_month_label": "Día del mes",
+    "command_label": "Comando",
+    "command_placeholder": "p. ej. & \"$env:USERPROFILE\\scripts\\run.ps1\" o /home/user/scripts/run.sh",
+    "command_hint": "Comando shell que ejecutará el programador nativo.",
+    "description_label": "Descripción (opcional)",
+    "submit": "Crear cron",
+    "submitting": "Creando…"
+  },
+  "delete_dialog": {
+    "title": "¿Eliminar este cron?",
+    "body": "La tarea se elimina del programador nativo. Esta acción no se puede deshacer."
+  },
+  "toggle_uac_warning": {
+    "title": "Aviso UAC inesperado",
+    "body": "El toggle debería ser sin UAC. Si ves este aviso, la tarea elevator no está registrada. En Windows ejecuta <code>scripts\\register-elevator.ps1</code> desde un PowerShell admin."
+  },
+  "errors": {
+    "create_failed": "No se pudo crear el cron.",
+    "toggle_failed": "No se pudo cambiar el estado del cron.",
+    "delete_failed": "No se pudo eliminar el cron.",
+    "run_failed": "Ejecución fallida: {{error}}",
+    "name_invalid": "El nombre contiene caracteres no válidos.",
+    "command_required": "Introduce un comando."
+  }
+}

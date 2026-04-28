@@ -1,0 +1,20 @@
+{
+  "page_title": "Docs / Vault",
+  "page_subtitle": "Browse your Obsidian vault as living documentation.",
+  "vault_path_label": "Vault path",
+  "vault_not_configured_title": "Vault not configured",
+  "vault_not_configured_body": "Set <code>VAULT_PATH</code> in your .env or pick a folder below to enable the renderer.",
+  "choose_folder": "Choose folder",
+  "search_placeholder": "Search the vault…",
+  "no_results": "No results.",
+  "file_tree": {
+    "expand_all": "Expand all",
+    "collapse_all": "Collapse all",
+    "filter": "Filter…"
+  },
+  "preview": {
+    "loading": "Loading document…",
+    "not_markdown": "File type not supported for preview.",
+    "open_external": "Open externally"
+  }
+}

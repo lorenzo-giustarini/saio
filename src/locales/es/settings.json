@@ -1,0 +1,54 @@
+{
+  "page_title": "Ajustes",
+  "page_subtitle": "Personaliza SAIO según tus preferencias.",
+  "sections": {
+    "general": "General",
+    "appearance": "Apariencia",
+    "language": "Idioma",
+    "auth": "Seguridad",
+    "advanced": "Avanzado"
+  },
+  "general": {
+    "data_dir_label": "Carpeta de datos",
+    "data_dir_hint": "Donde SAIO guarda cuentas, proyectos y tareas. Cambiarla requiere reiniciar.",
+    "vault_path_label": "Ruta del vault de Obsidian",
+    "vault_path_hint": "Opcional. Solo necesario para el renderizador del Vault."
+  },
+  "appearance": {
+    "theme_label": "Tema",
+    "theme_dark": "Oscuro",
+    "theme_light": "Claro",
+    "theme_system": "Sistema",
+    "compact_mode": "Modo compacto",
+    "compact_mode_hint": "Reduce el padding y el tamaño de la tipografía."
+  },
+  "language": {
+    "title": "Idioma de la interfaz",
+    "subtitle": "Elige el idioma de SAIO. Los correos del enlace mágico se enviarán en el mismo idioma.",
+    "auto_detect": "Detectar automáticamente del navegador",
+    "manual_select": "Seleccionar manualmente"
+  },
+  "auth": {
+    "session_timeout_label": "Tiempo de sesión",
+    "session_timeout_15": "15 minutos",
+    "session_timeout_60": "1 hora",
+    "session_timeout_240": "4 horas",
+    "session_timeout_1440": "24 horas",
+    "rotate_jwt_secret": "Rotar el secreto JWT",
+    "rotate_jwt_warning": "Todos los dispositivos conectados se cerrarán.",
+    "totp_reset": "Resetear TOTP",
+    "totp_reset_warning": "Tendrás que volver a escanear el QR con tu app authenticator.",
+    "recovery_codes": "Códigos de recuperación",
+    "regenerate_recovery": "Regenerar códigos"
+  },
+  "advanced": {
+    "logs_path_label": "Carpeta de logs",
+    "open_logs": "Abrir carpeta de logs",
+    "telemetry_label": "Telemetría",
+    "telemetry_hint": "Desactivada en SAIO. Ningún dato sale de tu máquina.",
+    "version_label": "Versión de SAIO",
+    "check_updates": "Buscar actualizaciones"
+  },
+  "saved": "Ajustes guardados.",
+  "save_failed": "No se pudieron guardar los ajustes."
+}

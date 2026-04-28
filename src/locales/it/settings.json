@@ -1,0 +1,54 @@
+{
+  "page_title": "Impostazioni",
+  "page_subtitle": "Personalizza SAIO secondo le tue preferenze.",
+  "sections": {
+    "general": "Generali",
+    "appearance": "Aspetto",
+    "language": "Lingua",
+    "auth": "Sicurezza",
+    "advanced": "Avanzate"
+  },
+  "general": {
+    "data_dir_label": "Cartella dati",
+    "data_dir_hint": "Dove SAIO salva account, progetti, task. Cambialo richiede riavvio.",
+    "vault_path_label": "Percorso vault Obsidian",
+    "vault_path_hint": "Opzionale. Necessario solo per il renderer Vault."
+  },
+  "appearance": {
+    "theme_label": "Tema",
+    "theme_dark": "Scuro",
+    "theme_light": "Chiaro",
+    "theme_system": "Sistema",
+    "compact_mode": "Modalità compatta",
+    "compact_mode_hint": "Riduce padding e dimensioni dei caratteri."
+  },
+  "language": {
+    "title": "Lingua dell'interfaccia",
+    "subtitle": "Scegli la lingua di SAIO. Il magic link via email userà la stessa lingua.",
+    "auto_detect": "Rileva automaticamente dal browser",
+    "manual_select": "Seleziona manualmente"
+  },
+  "auth": {
+    "session_timeout_label": "Timeout sessione",
+    "session_timeout_15": "15 minuti",
+    "session_timeout_60": "1 ora",
+    "session_timeout_240": "4 ore",
+    "session_timeout_1440": "24 ore",
+    "rotate_jwt_secret": "Ruota chiave JWT",
+    "rotate_jwt_warning": "Tutti i dispositivi collegati verranno disconnessi.",
+    "totp_reset": "Reset TOTP",
+    "totp_reset_warning": "Dovrai ri-scansionare il QR code con la tua app authenticator.",
+    "recovery_codes": "Codici di recupero",
+    "regenerate_recovery": "Rigenera codici"
+  },
+  "advanced": {
+    "logs_path_label": "Cartella log",
+    "open_logs": "Apri cartella log",
+    "telemetry_label": "Telemetria",
+    "telemetry_hint": "Disattivata in SAIO. Nessun dato esce dalla tua macchina.",
+    "version_label": "Versione SAIO",
+    "check_updates": "Controlla aggiornamenti"
+  },
+  "saved": "Impostazioni salvate.",
+  "save_failed": "Impossibile salvare le impostazioni."
+}
