@@ -1,0 +1,101 @@
+node_modules
+dist
+dist-ssr
+*.local
+
+# Env
+.env.local
+.env
+.env.*
+!.env.example
+
+# Editor
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Dashboard data — user-owned, never commit runtime state
+data/briefs/*.json
+data/responses/*.json
+data/responses/*.txt
+data/tasks/*.json
+data/locks/*.lock
+data/archive/**
+data/logs/**
+data/projects/*.json
+data/projects.json
+data/metrics/*.json
+data/feedback/*.json
+data/commands/*.json
+data/vps-config.json
+data/vps-state/*.json
+data/ssh-inventory.json
+data/task-types.json
+data/accounts.json
+data/accounts.json.bak
+data/custom-providers.json
+data/playwright-sessions/**
+!data/.gitkeep
+!data/**/.gitkeep
+!data/briefs/brief-demo.json
+!data/ssh-inventory.example.json
+
+# Runtime data with project-specific content (kickoffs, client workspaces, logos)
+data/kickoffs/**
+data/saio-logo-proposals/**
+data/new-project-*/**
+data/project-workspaces/**
+data/orchestrator.health
+!data/kickoffs/.gitkeep
+!data/saio-logo-proposals/.gitkeep
+!data/project-workspaces/.gitkeep
+
+# Data backups and migration artifacts (timestamped or tagged snapshots)
+data/**/*.backup-*
+data/**/*.imported-*
+data/**/*.bak
+
+# Local config overrides (user-specific)
+server/lib/local.config.ts
+server/lib/*.local.ts
+
+# Python orchestrator
+orchestrator/__pycache__/
+orchestrator/*.pyc
+orchestrator/.venv/
+
+# Backups
+backups/
+
+# OS
+Thumbs.db
+
+# Test artifacts (screenshots from Playwright sessions, not part of the codebase)
+*.png
+.playwright-cli/
+
+# V15.8 WS38 — tmp/ contiene JWT tokens effimeri + test artifacts (NEVER commit)
+tmp/
+
+# V14.27/V14.28 — runtime state, secrets, audit logs (NEVER commit)
+data/.setup-state.json
+data/.cron-token
+data/elevator/
+data/errors/
+data/audit/
+data/notifications/
+data/cron-meta.json
+data/cron-token
+
+# V15.0 WS3 — Auth state (claim tokens, owner, sessions, JWT secret, recovery codes — NEVER commit)
+data/auth/
+
+# Allow seed data to be committed
+!data/errors/known-fixes.md

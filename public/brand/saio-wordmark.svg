@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 60" width="200" height="60" role="img" aria-label="saio wordmark">
+  <!-- Lowercase 'saio' in rounded geometric sans-serif (Proposal 1 style) -->
+  <text x="100" y="46"
+    font-family="'Geist', 'Inter', 'SF Pro Display', 'Segoe UI', system-ui, sans-serif"
+    font-size="52"
+    font-weight="700"
+    letter-spacing="-2"
+    fill="currentColor"
+    text-anchor="middle">saio</text>
+</svg>

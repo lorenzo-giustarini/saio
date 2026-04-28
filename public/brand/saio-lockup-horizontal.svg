@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 120" width="420" height="120" role="img" aria-label="SAIO horizontal lockup">
+  <defs>
+    <linearGradient id="lh-stroke" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#c4b5fd"/>
+      <stop offset="100%" stop-color="#7c3aed"/>
+    </linearGradient>
+    <radialGradient id="lh-core" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="35%" stop-color="#f5f3ff"/>
+      <stop offset="75%" stop-color="#c4b5fd"/>
+      <stop offset="100%" stop-color="#a78bfa" stop-opacity="0.6"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Icon left -->
+  <g transform="translate(10, 10)">
+    <g fill="none" stroke="url(#lh-stroke)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M 35 14 L 35 32 Q 35 40 43 40 L 50 40"/>
+      <path d="M 65 14 L 65 32 Q 65 40 57 40 L 50 40"/>
+      <path d="M 86 35 L 68 35 Q 60 35 60 43 L 60 50"/>
+      <path d="M 86 65 L 68 65 Q 60 65 60 57 L 60 50"/>
+      <path d="M 65 86 L 65 68 Q 65 60 57 60 L 50 60"/>
+      <path d="M 35 86 L 35 68 Q 35 60 43 60 L 50 60"/>
+      <path d="M 14 65 L 32 65 Q 40 65 40 57 L 40 50"/>
+      <path d="M 14 35 L 32 35 Q 40 35 40 43 L 40 50"/>
+    </g>
+    <circle cx="50" cy="50" r="8" fill="url(#lh-core)"/>
+    <circle cx="50" cy="50" r="3" fill="#ffffff"/>
+  </g>
+
+  <!-- Wordmark lowercase 'saio' -->
+  <text x="140" y="72"
+    font-family="'Geist', 'Inter', 'SF Pro Display', 'Segoe UI', system-ui, sans-serif"
+    font-size="58"
+    font-weight="700"
+    letter-spacing="-2.5"
+    fill="currentColor">saio</text>
+
+  <!-- Tagline -->
+  <text x="142" y="96"
+    font-family="'Inter', 'Segoe UI', system-ui, sans-serif"
+    font-size="11"
+    font-weight="500"
+    letter-spacing="2"
+    fill="#a78bfa"
+    fill-opacity="0.9">Smart AI Office</text>
+</svg>

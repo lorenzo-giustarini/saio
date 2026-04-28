@@ -1,0 +1,21 @@
+{
+  "_comment": "Copy this file to data/ssh-inventory.json and fill with your real VPS hosts. ssh-inventory.json is gitignored.",
+  "vps": [
+    {
+      "id": "demo-prod",
+      "ip": "203.0.113.10",
+      "hostname": "demo-server",
+      "label": "Demo production VPS",
+      "keyName": "id_ed25519",
+      "category": "production",
+      "notes": "Example entry — replace with your real VPS. keyName refers to file in ~/.ssh/ used by SSH probe."
+    },
+    {
+      "id": "demo-staging",
+      "ip": "203.0.113.11",
+      "label": "Demo staging",
+      "keyName": "id_ed25519",
+      "category": "staging"
+    }
+  ]
+}

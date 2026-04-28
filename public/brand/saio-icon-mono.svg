@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" role="img" aria-label="SAIO icon monochrome — Neural Nexus">
+  <g fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M 35 14 L 35 32 Q 35 40 43 40 L 50 40"/>
+    <path d="M 65 14 L 65 32 Q 65 40 57 40 L 50 40"/>
+    <path d="M 86 35 L 68 35 Q 60 35 60 43 L 60 50"/>
+    <path d="M 86 65 L 68 65 Q 60 65 60 57 L 60 50"/>
+    <path d="M 65 86 L 65 68 Q 65 60 57 60 L 50 60"/>
+    <path d="M 35 86 L 35 68 Q 35 60 43 60 L 50 60"/>
+    <path d="M 14 65 L 32 65 Q 40 65 40 57 L 40 50"/>
+    <path d="M 14 35 L 32 35 Q 40 35 40 43 L 40 50"/>
+  </g>
+  <circle cx="50" cy="50" r="5" fill="currentColor"/>
+</svg>
