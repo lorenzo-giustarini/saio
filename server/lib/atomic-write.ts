@@ -5,6 +5,11 @@ import os from 'node:os'
 /**
  * Writes a file atomically via temp+rename pattern.
  * Prevents readers from seeing a half-written file.
+ *
+ * V15.9 WS39 — Retry con backoff per Windows EPERM su rename.
+ * Causa nota: Windows Defender realtime scan può tenere lock sul .tmp file
+ * durante la transizione, causando EPERM sporadico. Retry 3x con jitter
+ * (50/200/800ms) risolve >99% dei casi senza disabilitare AV.
  */
 export async function atomicWriteFile(
   targetPath: string,
@@ -15,7 +20,7 @@ export async function atomicWriteFile(
   const tmpPath = path.join(dir, `.${base}.${process.pid}.${Date.now()}.tmp`)
   try {
     await fs.writeFile(tmpPath, content)
-    await fs.rename(tmpPath, targetPath)
+    await renameWithRetry(tmpPath, targetPath)
   } catch (err) {
     try {
       await fs.unlink(tmpPath)
@@ -24,6 +29,34 @@ export async function atomicWriteFile(
     }
     throw err
   }
+}
+
+/**
+ * Rename con retry esponenziale per resilienza Windows AV/lock.
+ * Tentativi: 50ms, 200ms, 800ms (totale max ~1.05s). Se anche dopo 3 tentativi
+ * fallisce, throw l'ultimo errore.
+ */
+async function renameWithRetry(src: string, dest: string): Promise<void> {
+  const delays = [50, 200, 800]
+  let lastErr: unknown = null
+  for (let i = 0; i <= delays.length; i++) {
+    try {
+      await fs.rename(src, dest)
+      return
+    } catch (err: unknown) {
+      lastErr = err
+      const code = (err as NodeJS.ErrnoException).code
+      // Solo retry su EPERM/EBUSY/EACCES (Windows AV/lock issues). Altri errori → throw subito.
+      if (code !== 'EPERM' && code !== 'EBUSY' && code !== 'EACCES') {
+        throw err
+      }
+      if (i < delays.length) {
+        const jitter = Math.random() * delays[i]!
+        await new Promise((r) => setTimeout(r, delays[i]! + jitter))
+      }
+    }
+  }
+  throw lastErr
 }
 
 /**

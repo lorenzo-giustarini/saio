@@ -31,6 +31,22 @@ export default function LoginPage() {
     )
   }
 
+  // V15.9 WS39 — se API claim/status fallisce (backend down), non mostrare form
+  // signin a vuoto: errore esplicito che aiuta debug
+  if (status === undefined) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="max-w-md p-6 border border-destructive/30 rounded-lg bg-destructive/5">
+          <h2 className="text-lg font-semibold text-destructive mb-2">Backend non raggiungibile</h2>
+          <p className="text-sm text-muted-foreground mb-4">
+            Il server SAIO sulla porta 3031 non risponde. Verifica che <code className="text-xs bg-muted px-1 rounded">npm run dev:server</code> sia attivo.
+          </p>
+          <button onClick={() => window.location.reload()} className="text-sm underline text-primary">Riprova</button>
+        </div>
+      </div>
+    )
+  }
+
   // Pre-bootstrap: redirect a /claim (anche se serve token URL — meglio segnalare)
   if (status && !status.claimed) {
     return <Navigate to="/claim" replace />
