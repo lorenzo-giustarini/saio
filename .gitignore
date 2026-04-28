@@ -79,6 +79,7 @@ Thumbs.db
 
 # Test artifacts (screenshots from Playwright sessions, not part of the codebase)
 *.png
+!src-tauri/icons/*.png
 .playwright-cli/
 
 # V15.8 WS38 — tmp/ contiene JWT tokens effimeri + test artifacts (NEVER commit)
