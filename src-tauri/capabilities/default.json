@@ -10,6 +10,12 @@
     "shell:default",
     "shell:allow-execute",
     "shell:allow-spawn",
+    {
+      "identifier": "shell:allow-spawn",
+      "allow": [
+        { "name": "node", "sidecar": true, "args": true }
+      ]
+    },
     "dialog:default",
     "fs:default",
     "fs:allow-read-text-file",

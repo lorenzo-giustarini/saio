@@ -45,9 +45,13 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
+    "externalBin": [
+      "binaries/node"
+    ],
     "resources": [
       "../scripts/register-elevator.ps1",
-      "../scripts/elevator-windows.ps1"
+      "../scripts/elevator-windows.ps1",
+      "binaries/saio-server.cjs"
     ],
     "windows": {
       "nsis": {

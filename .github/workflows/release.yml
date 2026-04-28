@@ -51,7 +51,16 @@ jobs:
       - name: Install npm dependencies
         run: npm install --ignore-scripts
 
-      - name: Build sidecar
+      - name: Download Node portable (sidecar runtime)
+        shell: bash
+        run: |
+          if [ "${{ matrix.platform }}" = "windows-latest" ]; then
+            pwsh scripts/download-node-portable.ps1
+          else
+            bash scripts/download-node-portable.sh
+          fi
+
+      - name: Build sidecar bundle
         run: npm run sidecar:bundle
 
       - name: Build Tauri app + create GitHub Release

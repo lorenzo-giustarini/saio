@@ -1,15 +1,16 @@
 /**
- * build-sidecar.ts — Bundle Express server come single-file binary per Tauri sidecar
- * (V15.9 WS39 Microtask 9)
+ * build-sidecar.ts — Bundle Express server into a single JS file for Tauri sidecar
+ * (V15.9 WS42 M11.3)
  *
- * Output: src-tauri/binaries/saio-server-{platform}{ext}
- *   - Win:   src-tauri/binaries/saio-server-x86_64-pc-windows-msvc.exe
- *   - Linux: src-tauri/binaries/saio-server-x86_64-unknown-linux-gnu
- *   - macOS: src-tauri/binaries/saio-server-aarch64-apple-darwin (Apple Silicon)
- *           src-tauri/binaries/saio-server-x86_64-apple-darwin (Intel)
+ * Output: src-tauri/binaries/saio-server.cjs (single file, ~5 MB)
  *
- * Pattern: esbuild bundle TS+deps in un single .js, poi pkg/Node-SEA produce eseguibile.
- * Per ora stub: usiamo Node runtime portable + bundle .js (più semplice, +30MB ma funziona).
+ * The bundle is launched at runtime by a portable Node binary that Tauri ships
+ * as `externalBin: ["binaries/node"]`. The lib.rs spawns it via:
+ *     app.shell().sidecar("node").args(["resources/saio-server.cjs"]).spawn()
+ *
+ * Native modules (node-pty, bcrypt) are kept external. Their prebuilt .node
+ * files are copied into the bundle.resources by tauri-action / cargo tauri build
+ * via the `bundle.resources` glob in tauri.conf.json.
  */
 import { build } from 'esbuild'
 import path from 'node:path'
@@ -19,15 +20,11 @@ import { fileURLToPath } from 'node:url'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const REPO_ROOT = path.resolve(__dirname, '..')
-const OUT_DIR = path.join(REPO_ROOT, 'src-tauri', 'binaries')
+const BIN_DIR = path.join(REPO_ROOT, 'src-tauri', 'binaries')
 
 async function main(): Promise<void> {
-  await fs.mkdir(OUT_DIR, { recursive: true })
-
-  const platform = process.platform
-  const triplet = getTriplet(platform)
-  const ext = platform === 'win32' ? '.exe' : ''
-  const outFile = path.join(OUT_DIR, `saio-server-${triplet}${ext}.js`)
+  await fs.mkdir(BIN_DIR, { recursive: true })
+  const outFile = path.join(BIN_DIR, 'saio-server.cjs')
 
   console.log(`Bundling Express server → ${outFile}`)
 
@@ -41,38 +38,33 @@ async function main(): Promise<void> {
     minify: false,
     sourcemap: false,
     external: [
-      // node-pty richiede native binding, NO bundle
+      // Native modules with prebuilt .node bindings — keep external,
+      // Tauri ships their parent dirs via bundle.resources
       'node-pty',
-      // bcrypt native
-      'bcryptjs',
-      // multer native
-      'multer',
+      'bcrypt',
     ],
-    define: { 'process.env.NODE_ENV': '"production"' },
+    define: {
+      'process.env.NODE_ENV': '"production"',
+      // CJS shim: code uses `fileURLToPath(import.meta.url)`; replace with global var
+      // that we initialize in banner.
+      'import.meta.url': '__saio_meta_url',
+    },
+    banner: {
+      js: 'var __saio_meta_url = require("url").pathToFileURL(__filename).href;',
+    },
+    // Resolve TypeScript paths
+    tsconfig: path.join(REPO_ROOT, 'tsconfig.json'),
   })
 
-  // Crea wrapper script che lancia Node + il bundle
-  const wrapper = `#!/usr/bin/env node\nrequire('./saio-server-${triplet}${ext}.js')\n`
-  const wrapperFile = path.join(OUT_DIR, `saio-server-${triplet}${ext}`)
-  await fs.writeFile(wrapperFile, wrapper, { mode: 0o755 })
-
-  console.log(`Bundle complete: ${outFile}`)
-  console.log(`Wrapper: ${wrapperFile}`)
-  console.log('Note: requires Node.js installed on target system OR bundle node-portable separately')
-}
-
-function getTriplet(platform: NodeJS.Platform): string {
-  const arch = process.arch
-  switch (platform) {
-    case 'win32':
-      return arch === 'x64' ? 'x86_64-pc-windows-msvc' : 'i686-pc-windows-msvc'
-    case 'linux':
-      return arch === 'x64' ? 'x86_64-unknown-linux-gnu' : 'aarch64-unknown-linux-gnu'
-    case 'darwin':
-      return arch === 'arm64' ? 'aarch64-apple-darwin' : 'x86_64-apple-darwin'
-    default:
-      throw new Error(`Unsupported platform: ${platform}`)
+  // Cleanup any old per-platform stub from V15.9 WS39 M2
+  for (const stale of ['saio-server-x86_64-pc-windows-msvc.exe', 'saio-server-x86_64-pc-windows-msvc.exe.js']) {
+    await fs.unlink(path.join(BIN_DIR, stale)).catch(() => {})
   }
+
+  const stat = await fs.stat(outFile)
+  console.log(`Bundle complete: ${outFile} (${(stat.size / 1024 / 1024).toFixed(2)} MB)`)
+  console.log('External native modules: node-pty, bcrypt (shipped via bundle.resources)')
+  console.log('Run with: <node-portable> saio-server.cjs')
 }
 
 main().catch((err) => {
