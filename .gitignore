@@ -102,3 +102,9 @@ data/auth/
 
 # V15.9 WS39 — Tauri setup artifacts (rustup-init.exe binario, 12MB)
 .tauri-setup/
+
+# V15.9 WS39 — Rust/Tauri build artifacts (NEVER commit)
+src-tauri/target/
+src-tauri/Cargo.lock
+src-tauri/binaries/saio-server-*
+src-tauri/gen/

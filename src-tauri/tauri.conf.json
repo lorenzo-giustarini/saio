@@ -45,9 +45,6 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "externalBin": [
-      "binaries/saio-server"
-    ],
     "windows": {
       "nsis": {
         "installMode": "perMachine",
