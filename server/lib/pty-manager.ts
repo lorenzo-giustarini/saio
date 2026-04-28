@@ -624,13 +624,17 @@ class PtyManager {
       /* never block spawn for pre-update issues */
     }
 
-    const shell = os.platform() === 'win32' ? 'cmd.exe' : (process.env.SHELL || 'bash')
+    // V15.9 WS39: cross-platform shell via PAL (cmd.exe /k Win, bash/zsh -c Unix)
+    const { getPlatform } = await import('./platform')
+    const shellSpec = getPlatform().shell.defaultShell()
+    const shell = shellSpec.shellPath
+    const shellArgs = shellSpec.args(effectiveCmd)
 
     let proc: pty.IPty
     try {
       proc = pty.spawn(
         shell,
-        os.platform() === 'win32' ? ['/k', effectiveCmd] : ['-c', effectiveCmd],
+        shellArgs,
         {
           name: 'xterm-color',
           cols: 100,

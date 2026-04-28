@@ -103,22 +103,49 @@ export function vpsRouter() {
     const host = VPS_HOSTS.find((h) => h.id === req.params.id)
     if (!host) return res.status(404).json({ error: 'VPS not found' })
     try {
+      // V15.9 WS39: cross-platform via PAL (Win cmd.exe /k start, Unix open Terminal)
+      const { getPlatform } = await import('../lib/platform')
+      const pal = getPlatform()
       const title = `SSH-${host.id}`
-      // Windows: start cmd /k "ssh -i <key> root@<ip>"
-      const keyPath = '%USERPROFILE%\\.ssh\\' + host.keyName
+      const keyPath = path.join(pal.paths.sshDir(), host.keyName)
       const sshCmd = `ssh -i "${keyPath}" root@${host.ip}`
-      const args = ['/c', 'start', `"${title}"`, 'cmd.exe', '/k', sshCmd]
-      const child = spawn('cmd.exe', args, {
-        shell: false,
-        detached: true,
-        stdio: 'ignore',
-        windowsHide: false,
-      })
+
+      let child: ReturnType<typeof spawn>
+      if (pal.platform === 'win32') {
+        const args = ['/c', 'start', `"${title}"`, 'cmd.exe', '/k', sshCmd]
+        child = spawn('cmd.exe', args, { shell: false, detached: true, stdio: 'ignore', windowsHide: false })
+      } else if (pal.platform === 'darwin') {
+        // macOS: open new Terminal window with SSH command
+        const script = `tell application "Terminal" to do script "${sshCmd.replace(/"/g, '\\"')}"`
+        child = spawn('osascript', ['-e', script], { detached: true, stdio: 'ignore' })
+      } else {
+        // Linux: try common terminal emulators
+        const terms = [
+          ['gnome-terminal', ['--', 'bash', '-c', `${sshCmd}; exec bash`]],
+          ['konsole', ['--', 'bash', '-c', `${sshCmd}; exec bash`]],
+          ['xterm', ['-e', `${sshCmd}; exec bash`]],
+        ] as const
+        let ok = false
+        let lastErr: Error | null = null
+        for (const [term, args] of terms) {
+          try {
+            child = spawn(term, [...args], { detached: true, stdio: 'ignore' })
+            child.unref()
+            ok = true
+            break
+          } catch (err: unknown) {
+            lastErr = err as Error
+          }
+        }
+        if (!ok) throw lastErr || new Error('No terminal emulator found (gnome-terminal/konsole/xterm)')
+        return res.json({ ok: true, title })
+      }
       child.unref()
       res.json({ ok: true, pid: child.pid, title })
-    } catch (err: any) {
-      logger.error('VPS open-cmd failed:', err)
-      res.status(500).json({ error: err.message })
+    } catch (err: unknown) {
+      const e = err as Error
+      logger.error('VPS open-cmd failed:', e)
+      res.status(500).json({ error: e.message })
     }
   })
 
