@@ -90,16 +90,30 @@ i18n
     defaultNS: 'common',
     interpolation: { escapeValue: false },
     detection: {
-      order: ['localStorage', 'navigator', 'htmlTag'],
+      order: ['cookie', 'localStorage', 'navigator', 'htmlTag'],
+      lookupCookie: 'saio_lang',
       lookupLocalStorage: 'saio_lang',
-      caches: ['localStorage'],
+      caches: ['localStorage', 'cookie'],
+      cookieMinutes: 60 * 24 * 365,
     },
     react: { useSuspense: false },
   })
 
+// Bootstrap: ensure cookie mirrors the resolved language at first load so the
+// backend (magic-link emails) sees the right Accept-Language equivalent.
+try {
+  const lang = (i18n.resolvedLanguage as SupportedLanguage) || 'en'
+  document.cookie = `saio_lang=${lang}; Path=/; Max-Age=${60 * 60 * 24 * 365}; SameSite=Lax`
+} catch { /* ignore */ }
+
 export function setLanguage(lang: SupportedLanguage) {
   void i18n.changeLanguage(lang)
   localStorage.setItem('saio_lang', lang)
+  // Mirror the choice on a cookie so the backend uses the same language for
+  // server-rendered content (magic-link emails). 1 year, lax, same site only.
+  try {
+    document.cookie = `saio_lang=${lang}; Path=/; Max-Age=${60 * 60 * 24 * 365}; SameSite=Lax`
+  } catch { /* ignore */ }
 }
 
 export function currentLanguage(): SupportedLanguage {

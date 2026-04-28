@@ -1,5 +1,6 @@
 /**
  * V15.0 WS6 — Email sender multi-provider.
+ * V15.9 WS43 — i18n IT/EN/ES support via opts.locale.
  *
  * Routing:
  *  - DASHBOARD_AUTH_DEBUG_MAGIC_LINK=true → stampa link in stdout (no email reali)
@@ -14,48 +15,125 @@ import { Resend } from 'resend'
 import { logger } from '../logger'
 import { isDebugMagicLink } from './constants'
 
+export type EmailLocale = 'it' | 'en' | 'es'
+export const SUPPORTED_EMAIL_LOCALES: readonly EmailLocale[] = ['it', 'en', 'es'] as const
+
 export interface MagicLinkEmailOpts {
   to: string
   link: string
   purpose: 'login' | 'claim' | 'invite'
   expiresInMinutes: number
+  /** Lingua del messaggio. Default 'en'. */
+  locale?: EmailLocale
 }
 
-function buildSubject(purpose: MagicLinkEmailOpts['purpose']): string {
-  switch (purpose) {
-    case 'claim':
-      return 'SAIO Dashboard — claim your instance'
-    case 'invite':
-      return 'SAIO Dashboard — you have been invited'
-    case 'login':
-    default:
-      return 'SAIO Dashboard — sign-in link'
+/** Picks a supported locale from an Accept-Language header or a cookie value. */
+export function pickEmailLocale(input: string | undefined | null, fallback: EmailLocale = 'en'): EmailLocale {
+  if (!input) return fallback
+  const normalized = input.toLowerCase().split(/[,;]/)[0]?.split('-')[0]?.trim()
+  if (normalized && (SUPPORTED_EMAIL_LOCALES as readonly string[]).includes(normalized)) {
+    return normalized as EmailLocale
   }
+  return fallback
+}
+
+interface EmailStrings {
+  subject: { login: string; claim: string; invite: string }
+  heading: string
+  greeting: string
+  body: { login: string; claim: string; invite: string }
+  buttonLabel: string
+  fallbackHelp: string
+  ignoreFooter: string
+  textBody: (link: string, expiresMin: number) => string
+}
+
+const EMAIL_STRINGS: Record<EmailLocale, EmailStrings> = {
+  it: {
+    subject: {
+      login: 'SAIO Dashboard — link di accesso',
+      claim: 'SAIO Dashboard — completa la configurazione',
+      invite: 'SAIO Dashboard — sei stato invitato',
+    },
+    heading: 'SAIO Dashboard',
+    greeting: 'Ciao,',
+    body: {
+      login: 'clicca sul pulsante qui sotto per accedere alla tua dashboard. Il link scade tra {{minutes}} minuti e può essere usato una sola volta.',
+      claim: 'clicca sul pulsante qui sotto per completare la configurazione della tua dashboard. Il link scade tra {{minutes}} minuti e può essere usato una sola volta.',
+      invite: 'clicca sul pulsante qui sotto per accedere alla dashboard a cui sei stato invitato. Il link scade tra {{minutes}} minuti e può essere usato una sola volta.',
+    },
+    buttonLabel: 'Continua',
+    fallbackHelp: 'Se il pulsante non funziona, copia questo URL nel browser:',
+    ignoreFooter: 'Se non hai richiesto tu questo accesso, puoi ignorare questa email.',
+    textBody: (link, mins) => `SAIO Dashboard\n\nLink (scade tra ${mins} min, monouso):\n${link}\n\nSe non hai richiesto tu questo accesso, ignora pure questa email.`,
+  },
+  en: {
+    subject: {
+      login: 'SAIO Dashboard — sign-in link',
+      claim: 'SAIO Dashboard — finish setup',
+      invite: 'SAIO Dashboard — you have been invited',
+    },
+    heading: 'SAIO Dashboard',
+    greeting: 'Hi there,',
+    body: {
+      login: 'click the button below to sign in to your dashboard. The link expires in {{minutes}} minutes and can be used once.',
+      claim: 'click the button below to finish setting up your dashboard. The link expires in {{minutes}} minutes and can be used once.',
+      invite: 'click the button below to access the dashboard you were invited to. The link expires in {{minutes}} minutes and can be used once.',
+    },
+    buttonLabel: 'Continue',
+    fallbackHelp: "If the button doesn't work, copy this URL into your browser:",
+    ignoreFooter: "If you didn't request this, you can safely ignore this email.",
+    textBody: (link, mins) => `SAIO Dashboard\n\nLink (expires in ${mins} min, single-use):\n${link}\n\nIf you didn't request this, you can safely ignore this email.`,
+  },
+  es: {
+    subject: {
+      login: 'SAIO Dashboard — enlace de acceso',
+      claim: 'SAIO Dashboard — finaliza la configuración',
+      invite: 'SAIO Dashboard — has sido invitado',
+    },
+    heading: 'SAIO Dashboard',
+    greeting: 'Hola,',
+    body: {
+      login: 'haz clic en el botón de abajo para acceder a tu dashboard. El enlace caduca en {{minutes}} minutos y solo se puede usar una vez.',
+      claim: 'haz clic en el botón de abajo para terminar la configuración de tu dashboard. El enlace caduca en {{minutes}} minutos y solo se puede usar una vez.',
+      invite: 'haz clic en el botón de abajo para acceder a la dashboard a la que te han invitado. El enlace caduca en {{minutes}} minutos y solo se puede usar una vez.',
+    },
+    buttonLabel: 'Continuar',
+    fallbackHelp: 'Si el botón no funciona, copia esta URL en tu navegador:',
+    ignoreFooter: 'Si no has solicitado este acceso, puedes ignorar este correo.',
+    textBody: (link, mins) => `SAIO Dashboard\n\nEnlace (caduca en ${mins} min, un solo uso):\n${link}\n\nSi no has solicitado este acceso, puedes ignorar este correo.`,
+  },
+}
+
+function getStrings(locale: EmailLocale | undefined): EmailStrings {
+  return EMAIL_STRINGS[locale && EMAIL_STRINGS[locale] ? locale : 'en']
+}
+
+function buildSubject(purpose: MagicLinkEmailOpts['purpose'], locale?: EmailLocale): string {
+  return getStrings(locale).subject[purpose]
 }
 
 function buildHtml(opts: MagicLinkEmailOpts): string {
-  const action =
-    opts.purpose === 'claim'
-      ? 'claim ownership of'
-      : opts.purpose === 'invite'
-      ? 'access (first-time invite to)'
-      : 'sign in to'
+  const s = getStrings(opts.locale)
+  const body = s.body[opts.purpose].replace('{{minutes}}', String(opts.expiresInMinutes))
   return `<!doctype html>
 <html><body style="font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:#0a0a0a;color:#e5e5e5;padding:40px;">
   <div style="max-width:520px;margin:0 auto;background:#171717;border:1px solid #262626;border-radius:8px;padding:32px;">
-    <h2 style="margin:0 0 16px 0;font-weight:600;">SAIO Dashboard</h2>
-    <p>Click the link below to ${action} your dashboard. The link expires in ${opts.expiresInMinutes} minutes and can be used only once.</p>
-    <p style="margin:24px 0;"><a href="${opts.link}" style="display:inline-block;background:#10b981;color:#fff;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:600;">Continue</a></p>
-    <p style="font-size:13px;color:#737373;">If the button doesn't work, copy this URL into your browser:</p>
+    <h2 style="margin:0 0 16px 0;font-weight:600;">${s.heading}</h2>
+    <p>${s.greeting}</p>
+    <p>${body}</p>
+    <p style="margin:24px 0;"><a href="${opts.link}" style="display:inline-block;background:#10b981;color:#fff;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:600;">${s.buttonLabel}</a></p>
+    <p style="font-size:13px;color:#737373;">${s.fallbackHelp}</p>
     <p style="font-size:12px;color:#a3a3a3;word-break:break-all;">${opts.link}</p>
     <hr style="border:none;border-top:1px solid #262626;margin:24px 0;" />
-    <p style="font-size:12px;color:#737373;">If you didn't request this, you can ignore this email.</p>
+    <p style="font-size:12px;color:#737373;">${s.ignoreFooter}</p>
   </div>
 </body></html>`
 }
 
 function buildText(opts: MagicLinkEmailOpts): string {
-  return `SAIO Dashboard\n\nLink (expires in ${opts.expiresInMinutes} min, single-use):\n${opts.link}\n\nIf you didn't request this, ignore this email.`
+  const s = getStrings(opts.locale)
+  return s.textBody(opts.link, opts.expiresInMinutes)
 }
 
 // ─────────────────── Sender abstraction ───────────────────
@@ -71,7 +149,7 @@ class DebugSender implements EmailSender {
   }
   async send(opts: MagicLinkEmailOpts): Promise<void> {
     logger.info('═══════════════════════════════════════════════════════════════════════')
-    logger.info(`  [DEBUG] MAGIC LINK (${opts.purpose}) for: ${opts.to}`)
+    logger.info(`  [DEBUG] MAGIC LINK (${opts.purpose}, locale=${opts.locale || 'en'}) for: ${opts.to}`)
     logger.info(`  ${opts.link}`)
     logger.info(`  Expires in ${opts.expiresInMinutes} minutes`)
     logger.info('═══════════════════════════════════════════════════════════════════════')
@@ -90,7 +168,7 @@ class SmtpSender implements EmailSender {
     this.transporter = nodemailer.createTransport({
       host,
       port,
-      secure: port === 465, // 465 = SSL, 587 = STARTTLS
+      secure: port === 465,
       auth: { user, pass },
     })
   }
@@ -101,7 +179,7 @@ class SmtpSender implements EmailSender {
     await this.transporter.sendMail({
       from: this.from,
       to: opts.to,
-      subject: buildSubject(opts.purpose),
+      subject: buildSubject(opts.purpose, opts.locale),
       html: buildHtml(opts),
       text: buildText(opts),
     })
@@ -122,7 +200,7 @@ class ResendSender implements EmailSender {
     const result = await this.client.emails.send({
       from: this.from,
       to: opts.to,
-      subject: buildSubject(opts.purpose),
+      subject: buildSubject(opts.purpose, opts.locale),
       html: buildHtml(opts),
       text: buildText(opts),
     })
@@ -136,18 +214,10 @@ class ResendSender implements EmailSender {
 
 let cachedSender: EmailSender | null = null
 
-/**
- * V15.0 WS7 — Reset cache. Usato dopo /api/auth/setup-email per forzare
- * re-evaluation del provider con i nuovi env vars.
- */
 export function clearSenderCache(): void {
   cachedSender = null
 }
 
-/**
- * V15.0 WS7 — Snapshot dello stato provider corrente, NO secrets.
- * Usato da GET /api/auth/setup-status per UI wizard.
- */
 export function getProviderSnapshot(): {
   configured: boolean
   provider: 'smtp' | 'resend' | 'debug' | null
@@ -202,7 +272,6 @@ function getSender(): EmailSender {
 
 /**
  * Sends magic-link email via configured provider.
- * Throws su provider mancante o errori di invio. Caller deve gestire.
  */
 export async function sendMagicLinkEmail(opts: MagicLinkEmailOpts): Promise<void> {
   return getSender().send(opts)

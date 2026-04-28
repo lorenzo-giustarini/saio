@@ -32,7 +32,7 @@ import {
   isClaimed,
   writeOwner,
 } from '../lib/auth/owner-store'
-import { clearSenderCache, getProviderSnapshot, sendMagicLinkEmail } from '../lib/auth/email'
+import { clearSenderCache, getProviderSnapshot, pickEmailLocale, sendMagicLinkEmail } from '../lib/auth/email'
 import { setProcessEnv, updateEnvLocal } from '../lib/auth/env-writer'
 import { signPending, signTokenPair, signTrusted, verifyPending, verifyRefresh } from '../lib/auth/jwt'
 import {
@@ -461,7 +461,11 @@ export function authRouter(dataDir: string): Router {
           ttlMinutes: MAGIC_LINK_TTL_MIN,
         })
         const link = buildPublicUrl(req, `/api/auth/verify?lt=${rawToken}`)
-        await sendMagicLinkEmail({ to: email, link, purpose: 'login', expiresInMinutes: MAGIC_LINK_TTL_MIN })
+        const locale = pickEmailLocale(
+          (req.cookies?.['saio_lang'] as string | undefined) ||
+            (req.get('accept-language') as string | undefined),
+        )
+        await sendMagicLinkEmail({ to: email, link, purpose: 'login', expiresInMinutes: MAGIC_LINK_TTL_MIN, locale })
         await audit({ type: 'login.requested', email, ip, userAgentHash: uah, meta: { allowed: true } })
       } catch (err) {
         logger.error('[auth] request-link failed:', err)
@@ -790,7 +794,11 @@ export function authRouter(dataDir: string): Router {
         ttlMinutes: MAGIC_LINK_TTL_MIN,
       })
       const link = buildPublicUrl(req, `/api/auth/verify?lt=${rawToken}`)
-      await sendMagicLinkEmail({ to: email, link, purpose: 'claim', expiresInMinutes: MAGIC_LINK_TTL_MIN })
+      const locale = pickEmailLocale(
+        (req.cookies?.['saio_lang'] as string | undefined) ||
+          (req.get('accept-language') as string | undefined),
+      )
+      await sendMagicLinkEmail({ to: email, link, purpose: 'claim', expiresInMinutes: MAGIC_LINK_TTL_MIN, locale })
       await audit({ type: 'claim.requested', ip, userAgentHash: uah, email, meta: { result: 'magic_link_sent', expiresAt } })
       res.json({ ok: true, message: 'Check your inbox for the sign-in link.' })
       return
