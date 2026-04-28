@@ -21,27 +21,29 @@ export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
-  const { data: status, isLoading } = useClaimStatus()
+  const { data: status, isLoading, isError, refetch } = useClaimStatus()
 
+  // V15.9 WS43 — splash "Starting backend" durante il cold-start del sidecar Tauri
+  // (Express può richiedere 2-5s per bind :3031). useClaimStatus ora ha retry 10×.
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-muted-foreground text-sm">Loading…</div>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
+        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+        <div className="text-muted-foreground text-sm">Avvio backend SAIO…</div>
       </div>
     )
   }
 
-  // V15.9 WS39 — se API claim/status fallisce (backend down), non mostrare form
-  // signin a vuoto: errore esplicito che aiuta debug
-  if (status === undefined) {
+  // Solo dopo 10 retry falliti mostriamo l'errore esplicito.
+  if (isError || status === undefined) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="max-w-md p-6 border border-destructive/30 rounded-lg bg-destructive/5">
           <h2 className="text-lg font-semibold text-destructive mb-2">Backend non raggiungibile</h2>
           <p className="text-sm text-muted-foreground mb-4">
-            Il server SAIO sulla porta 3031 non risponde. Verifica che <code className="text-xs bg-muted px-1 rounded">npm run dev:server</code> sia attivo.
+            Il server SAIO sulla porta 3031 non risponde dopo 20 secondi. In dev: lancia <code className="text-xs bg-muted px-1 rounded">npm run dev:server</code>. In release: l'app dovrebbe avviarlo da sola — controlla i log a <code className="text-xs bg-muted px-1 rounded">%LOCALAPPDATA%\us.revolutionmarketing.saio\logs\</code>.
           </p>
-          <button onClick={() => window.location.reload()} className="text-sm underline text-primary">Riprova</button>
+          <button onClick={() => refetch()} className="text-sm underline text-primary">Riprova</button>
         </div>
       </div>
     )
