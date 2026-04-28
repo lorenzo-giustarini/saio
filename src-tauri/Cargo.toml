@@ -1,6 +1,6 @@
 [package]
 name = "saio"
-version = "1.0.0"
+version = "1.0.0-beta.2"
 description = "SAIO - Smart AI Office (cross-platform Tauri 2 port)"
 authors = ["Lorenzo Giustarini <lorenzo@revolutionmarketing.us>"]
 edition = "2021"
