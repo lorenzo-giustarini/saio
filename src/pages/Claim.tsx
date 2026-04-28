@@ -6,8 +6,11 @@
  *  2. Query setupStatus → se !configured && !claimed → wizard auto-open
  *  3. Query claimStatus → se claimed=true → AlreadyClaimedPage
  *  4. Email entry form. Submit → POST /api/auth/claim/start
+ *
+ * V15.9 WS43: i18n IT/EN/ES.
  */
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Navigate, useNavigate, useSearchParams } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
 import { Settings2 } from 'lucide-react'
@@ -17,12 +20,14 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { EmailProviderWizard } from '@/components/auth/EmailProviderWizard'
+import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 
 export default function ClaimPage() {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const qc = useQueryClient()
   const token = (searchParams.get('token') || '').trim()
+  const { t } = useTranslation(['auth', 'common'])
   const [email, setEmail] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
@@ -31,7 +36,7 @@ export default function ClaimPage() {
 
   const { data: setupStatus, isLoading } = useSetupStatus()
 
-  // Auto-apri wizard al primo mount se !configured && !claimed && !skipped
+  // Auto-open wizard at first mount if !configured && !claimed && !skipped
   useEffect(() => {
     if (!setupStatus) return
     if (setupStatus.claimed) return
@@ -52,7 +57,7 @@ export default function ClaimPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-muted-foreground text-sm">Loading…</div>
+        <div className="text-muted-foreground text-sm">{t('common:actions.loading')}</div>
       </div>
     )
   }
@@ -63,14 +68,23 @@ export default function ClaimPage() {
 
   if (!token) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-6">
-        <div className="max-w-md w-full p-6 border border-border rounded-lg bg-card">
-          <h1 className="text-xl font-semibold mb-2">Missing claim token</h1>
-          <p className="text-sm text-muted-foreground">
-            The claim URL must include <code className="bg-muted px-1 rounded">?token=…</code>.
-            Check the server stdout banner or{' '}
-            <code className="bg-muted px-1 rounded">data/auth/CLAIM-TOKEN.txt</code>.
-          </p>
+      <div className="min-h-screen flex items-center justify-center bg-background p-4 sm:p-6">
+        <div className="max-w-md w-full p-5 sm:p-6 border border-border rounded-lg bg-card">
+          <div className="flex items-start justify-between gap-3 mb-2">
+            <h1 className="text-lg sm:text-xl font-semibold">
+              {t('auth:claim.error_missing_token_title', { defaultValue: 'Missing claim token' })}
+            </h1>
+            <LanguageSwitcher />
+          </div>
+          <p
+            className="text-sm text-muted-foreground"
+            dangerouslySetInnerHTML={{
+              __html: t('auth:claim.error_missing_token_body', {
+                defaultValue:
+                  'The claim URL must include <code>?token=…</code>. Check the server stdout banner or <code>data/auth/CLAIM-TOKEN.txt</code>.',
+              }),
+            }}
+          />
         </div>
       </div>
     )
@@ -79,7 +93,7 @@ export default function ClaimPage() {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     if (!email.trim()) {
-      setError('Email is required.')
+      setError(t('common:errors.invalid_email'))
       return
     }
     setSubmitting(true)
@@ -91,27 +105,24 @@ export default function ClaimPage() {
       })
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Unknown error'
-      if (msg.includes('410')) setError('This dashboard has already been claimed, or the token has expired.')
-      else if (msg.includes('400')) setError('Invalid claim token. Verify the URL and retry.')
-      else if (msg.includes('429')) setError('Troppi tentativi. Aspetta un\'ora e riprova.')
-      // V15.0 WS8 — 422 = recipient rejected / sender rejected / quota / auth / etc.
-      // Backend response include un message dettagliato; estrailo dal payload Error
+      if (msg.includes('410')) setError(t('auth:claim.error_already_claimed'))
+      else if (msg.includes('400')) setError(t('auth:claim.error_invalid_token'))
+      else if (msg.includes('429')) setError(t('common:errors.rate_limit'))
       else if (msg.includes('422')) {
-        // Format errore: "422: {json body}"
         const bodyMatch = msg.match(/^422:\s*(.+)$/s)
         if (bodyMatch && bodyMatch[1]) {
           try {
             const parsed = JSON.parse(bodyMatch[1]) as { message?: string }
-            setError(parsed.message || 'Invio email rifiutato dal server SMTP.')
+            setError(parsed.message || t('auth:claim.error_smtp_failed'))
           } catch {
-            setError('Invio email rifiutato dal server SMTP. Riconfigura il provider.')
+            setError(t('auth:claim.error_smtp_failed'))
           }
         } else {
-          setError('Invio email rifiutato dal server SMTP. Riconfigura il provider.')
+          setError(t('auth:claim.error_smtp_failed'))
         }
-      } else if (msg.includes('503')) setError('Server SMTP irraggiungibile. Riprova tra qualche minuto.')
-      else if (msg.includes('500')) setError('Email send failed. Configura il provider email cliccando "Setup email" qui sotto.')
-      else setError('Could not send claim email. Check server logs.')
+      } else if (msg.includes('503')) setError(t('auth:claim.error_smtp_unreachable', { defaultValue: 'SMTP server unreachable. Try again in a few minutes.' }))
+      else if (msg.includes('500')) setError(t('auth:claim.error_email_send_failed', { defaultValue: 'Email send failed. Open "Setup email" below to configure the provider.' }))
+      else setError(t('common:errors.generic'))
     } finally {
       setSubmitting(false)
     }
@@ -119,48 +130,52 @@ export default function ClaimPage() {
 
   return (
     <>
-      <div className="min-h-screen flex items-center justify-center bg-background p-6">
-        <div className="max-w-md w-full p-6 border border-border rounded-lg bg-card space-y-4">
-          <div>
-            <h1 className="text-xl font-semibold">Claim this dashboard</h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              You're the first user. Enter your email to become the owner. A magic link will be sent
-              there.
-            </p>
+      <div className="min-h-screen flex items-center justify-center bg-background p-4 sm:p-6">
+        <div className="max-w-md w-full p-5 sm:p-6 border border-border rounded-lg bg-card space-y-4">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex-1 min-w-0">
+              <h1 className="text-lg sm:text-xl font-semibold">{t('auth:claim.title')}</h1>
+              <p className="text-sm text-muted-foreground mt-1">{t('auth:claim.subtitle')}</p>
+            </div>
+            <LanguageSwitcher />
           </div>
 
           {showSetupWarning && (
             <div className="rounded-md bg-amber-500/10 border border-amber-500/30 p-3 text-xs text-amber-300">
-              Email provider non ancora configurato. Senza setup, il magic link non verrà inviato.{' '}
+              {t('auth:claim.smtp_not_configured_warning', {
+                defaultValue:
+                  'Email provider not yet configured. Without setup, the magic link won\'t be sent.',
+              })}{' '}
               <button
                 type="button"
                 onClick={() => setWizardOpen(true)}
                 className="underline font-medium"
               >
-                Apri setup →
+                {t('auth:claim.open_setup', { defaultValue: 'Open setup →' })}
               </button>
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Owner email</Label>
+              <Label htmlFor="email">{t('auth:claim.email_label')}</Label>
               <Input
                 id="email"
                 type="email"
+                inputMode="email"
                 value={email}
                 onChange={(ev) => setEmail(ev.target.value)}
-                placeholder="you@example.com"
+                placeholder={t('auth:claim.email_placeholder')}
                 required
                 autoComplete="email"
                 disabled={submitting}
               />
-              {/* V15.0 WS8 — Hint per provider SMTP non-relay */}
               {setupStatus?.provider === 'smtp' && (
                 <p className="text-xs text-muted-foreground">
-                  💡 Se usi SMTP del tuo dominio (es. ChemiCloud, Aruba, cPanel), l'email destinataria
-                  deve essere una casella dello stesso dominio (es. <code className="bg-muted px-1 rounded">tu@tuodominio.com</code>).
-                  I provider hosting non sono open-relay verso domini esterni.
+                  💡 {t('auth:claim.smtp_recipient_hint', {
+                    defaultValue:
+                      'If you use your own domain SMTP, the recipient email must be a mailbox on the same domain. Hosting providers don\'t open-relay to external domains.',
+                  })}
                 </p>
               )}
             </div>
@@ -170,23 +185,25 @@ export default function ClaimPage() {
               </div>
             )}
             <Button type="submit" className="w-full" disabled={submitting}>
-              {submitting ? 'Sending link…' : 'Send claim link'}
+              {submitting ? t('auth:claim.submitting') : t('auth:claim.submit')}
             </Button>
           </form>
 
-          <div className="flex items-center justify-between pt-3 border-t border-border">
-            <p className="text-xs text-muted-foreground">
-              The link expires in 15 minutes. Once claimed, this page returns 410 Gone forever.
+          <div className="flex items-center justify-between pt-3 border-t border-border gap-2">
+            <p className="text-xs text-muted-foreground flex-1">
+              {t('auth:claim.expires_hint', {
+                defaultValue: 'The link expires in 15 minutes. Once claimed, this page is permanently disabled.',
+              })}
             </p>
             <Button
               type="button"
               variant="ghost"
               size="sm"
               onClick={() => setWizardOpen(true)}
-              className="shrink-0 ml-2"
+              className="shrink-0"
             >
               <Settings2 className="w-3.5 h-3.5 mr-1" />
-              Setup email
+              {t('auth:claim.setup_email_button', { defaultValue: 'Setup email' })}
             </Button>
           </div>
         </div>
@@ -210,16 +227,21 @@ export default function ClaimPage() {
 }
 
 function AlreadyClaimedPage() {
+  const { t } = useTranslation(['auth'])
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-6">
-      <div className="max-w-md w-full p-6 border border-border rounded-lg bg-card text-center space-y-3">
-        <h1 className="text-xl font-semibold">Already claimed</h1>
+    <div className="min-h-screen flex items-center justify-center bg-background p-4 sm:p-6">
+      <div className="max-w-md w-full p-5 sm:p-6 border border-border rounded-lg bg-card text-center space-y-3">
+        <h1 className="text-lg sm:text-xl font-semibold">
+          {t('auth:claim.already_claimed_title', { defaultValue: 'Already configured' })}
+        </h1>
         <p className="text-sm text-muted-foreground">
-          This dashboard has been bootstrapped. The claim flow is permanently disabled.
+          {t('auth:claim.already_claimed_body', {
+            defaultValue: 'This dashboard has already been set up. The claim flow is permanently disabled.',
+          })}
         </p>
         <p className="text-sm">
           <a href="/login" className="text-primary underline">
-            Go to login →
+            {t('auth:claim.go_to_login', { defaultValue: 'Go to sign in →' })}
           </a>
         </p>
       </div>

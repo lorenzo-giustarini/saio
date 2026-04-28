@@ -2,19 +2,15 @@
  * V15.0 WS3-3B — TOTP enrollment page.
  *
  * Mounted dopo magic-link verify (server emette saio_pending cookie).
- * Flow:
- *  1. POST /api/auth/totp/enroll → riceve {qrCodeDataUrl, recoveryCodes plaintext}
- *  2. Mostra QR + recovery codes (con download .txt + copy)
- *  3. User scansiona QR con Google Authenticator/Authy/etc.
- *  4. User checkbox "I downloaded my recovery codes" required
- *  5. Input 6-digit code → POST /api/auth/totp/enroll-confirm
- *  6. Success → navigate /inbox
+ * V15.9 WS43: i18n IT/EN/ES.
  */
 import { useEffect, useState, type FormEvent } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 
 interface EnrollResponse {
   qrCodeDataUrl: string
@@ -24,6 +20,7 @@ interface EnrollResponse {
 
 export default function EnrollTotpPage() {
   const navigate = useNavigate()
+  const { t } = useTranslation(['auth', 'common'])
   const [enroll, setEnroll] = useState<EnrollResponse | null>(null)
   const [enrollError, setEnrollError] = useState<string | null>(null)
   const [code, setCode] = useState('')
@@ -31,7 +28,6 @@ export default function EnrollTotpPage() {
   const [confirmError, setConfirmError] = useState<string | null>(null)
   const [downloaded, setDownloaded] = useState(false)
   const [reveal, setReveal] = useState(false)
-  // V15.0 WS6 — Trusted device opt-in (default OFF)
   const [trustDevice, setTrustDevice] = useState(false)
   const [trustDays, setTrustDays] = useState<1 | 3 | 7 | 15 | 30>(7)
 
@@ -46,24 +42,25 @@ export default function EnrollTotpPage() {
         })
         if (!res.ok) {
           if (res.status === 401) {
-            setEnrollError('Session expired. Restart sign-in from /login.')
+            setEnrollError(t('common:errors.session_expired'))
           } else if (res.status === 409) {
-            setEnrollError('TOTP already enrolled. Go to /verify-totp to sign in.')
+            setEnrollError(t('auth:totp.errors.already_enrolled', { defaultValue: 'TOTP already enrolled. Go to /verify-totp to sign in.' }))
           } else {
-            setEnrollError('Could not start TOTP enrollment.')
+            setEnrollError(t('auth:totp.errors.enrollment_unavailable'))
           }
           return
         }
         const data = (await res.json()) as EnrollResponse
         if (!cancelled) setEnroll(data)
       } catch {
-        if (!cancelled) setEnrollError('Network error.')
+        if (!cancelled) setEnrollError(t('common:errors.network'))
       }
     }
     void init()
     return () => {
       cancelled = true
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   function downloadRecoveryCodes() {
@@ -106,16 +103,15 @@ export default function EnrollTotpPage() {
         }),
       })
       if (!res.ok) {
-        if (res.status === 401) setConfirmError('Invalid code. Open your authenticator app and try the current code.')
-        else if (res.status === 429) setConfirmError('Too many attempts. Wait 15 minutes.')
-        else if (res.status === 403) setConfirmError('Too many failed attempts — IP temporarily banned.')
-        else setConfirmError('Could not confirm enrollment.')
+        if (res.status === 401) setConfirmError(t('auth:totp.errors.invalid_code'))
+        else if (res.status === 429 || res.status === 403) setConfirmError(t('auth:totp.errors.lockout'))
+        else setConfirmError(t('common:errors.generic'))
         return
       }
       const data = (await res.json()) as { ok: boolean; redirect?: string }
       navigate(data.redirect || '/inbox', { replace: true })
     } catch {
-      setConfirmError('Network error.')
+      setConfirmError(t('common:errors.network'))
     } finally {
       setSubmitting(false)
     }
@@ -123,12 +119,17 @@ export default function EnrollTotpPage() {
 
   if (enrollError) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-6">
-        <div className="max-w-md w-full p-6 border border-border rounded-lg bg-card text-center space-y-3">
-          <h1 className="text-xl font-semibold">TOTP enrollment unavailable</h1>
+      <div className="min-h-screen flex items-center justify-center bg-background p-4 sm:p-6">
+        <div className="max-w-md w-full p-5 sm:p-6 border border-border rounded-lg bg-card text-center space-y-3">
+          <div className="flex items-start justify-end">
+            <LanguageSwitcher />
+          </div>
+          <h1 className="text-lg sm:text-xl font-semibold">
+            {t('auth:totp.enrollment_unavailable_title', { defaultValue: 'TOTP enrollment unavailable' })}
+          </h1>
           <p className="text-sm text-muted-foreground">{enrollError}</p>
           <a href="/login" className="text-sm text-primary underline">
-            Restart sign-in
+            {t('auth:totp.restart_signin', { defaultValue: 'Restart sign-in' })}
           </a>
         </div>
       </div>
@@ -138,38 +139,43 @@ export default function EnrollTotpPage() {
   if (!enroll) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-muted-foreground text-sm">Generating QR…</div>
+        <div className="text-muted-foreground text-sm">{t('auth:totp.generating_qr', { defaultValue: 'Generating QR…' })}</div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-6">
-      <div className="max-w-xl w-full p-6 border border-border rounded-lg bg-card space-y-5">
-        <div>
-          <h1 className="text-xl font-semibold">Enable two-factor authentication</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Scan the QR with Google Authenticator, Authy, or any TOTP app. Then enter the 6-digit code below.
-          </p>
+    <div className="min-h-screen flex items-center justify-center bg-background p-4 sm:p-6">
+      <div className="max-w-xl w-full p-5 sm:p-6 border border-border rounded-lg bg-card space-y-5">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <h1 className="text-lg sm:text-xl font-semibold">{t('auth:totp.setup_title')}</h1>
+            <p className="text-sm text-muted-foreground mt-1">{t('auth:totp.setup_subtitle')}</p>
+          </div>
+          <LanguageSwitcher />
         </div>
 
         <div className="flex justify-center bg-white p-3 rounded-md">
-          <img src={enroll.qrCodeDataUrl} alt="TOTP QR code" className="w-56 h-56" />
+          <img src={enroll.qrCodeDataUrl} alt={t('auth:totp.qr_label')} className="w-48 h-48 sm:w-56 sm:h-56" />
         </div>
 
         <div className="space-y-2 border-t border-border pt-4">
-          <div className="flex items-center justify-between">
-            <Label className="text-sm">Recovery codes (10)</Label>
+          <div className="flex items-center justify-between gap-2">
+            <Label className="text-sm">
+              {t('auth:totp.recovery_codes_label', { defaultValue: 'Recovery codes (10)' })}
+            </Label>
             <button
               type="button"
               onClick={() => setReveal((r) => !r)}
               className="text-xs text-muted-foreground underline"
             >
-              {reveal ? 'Hide' : 'Show'}
+              {reveal
+                ? t('auth:totp.hide_codes', { defaultValue: 'Hide' })
+                : t('auth:totp.show_codes', { defaultValue: 'Show' })}
             </button>
           </div>
           {reveal && (
-            <div className="bg-muted p-3 rounded-md font-mono text-xs grid grid-cols-2 gap-1">
+            <div className="bg-muted p-3 rounded-md font-mono text-xs grid grid-cols-1 sm:grid-cols-2 gap-1 break-all">
               {enroll.recoveryCodes.map((c, i) => (
                 <div key={i}>
                   <span className="text-muted-foreground">{(i + 1).toString().padStart(2, '0')}.</span> {c}
@@ -177,15 +183,13 @@ export default function EnrollTotpPage() {
               ))}
             </div>
           )}
-          <p className="text-xs text-muted-foreground">
-            Save these codes somewhere safe. Each code works once if you lose your authenticator. They will NOT be shown again.
-          </p>
-          <div className="flex gap-2">
+          <p className="text-xs text-muted-foreground">{t('auth:totp.recovery_body')}</p>
+          <div className="flex flex-wrap gap-2">
             <Button type="button" variant="outline" size="sm" onClick={downloadRecoveryCodes}>
-              Download .txt
+              {t('auth:totp.recovery_download')}
             </Button>
             <Button type="button" variant="outline" size="sm" onClick={copyCodes}>
-              Copy to clipboard
+              {t('auth:totp.recovery_copy', { defaultValue: 'Copy to clipboard' })}
             </Button>
           </div>
           <label className="flex items-center gap-2 pt-2 text-sm">
@@ -194,13 +198,13 @@ export default function EnrollTotpPage() {
               checked={downloaded}
               onChange={(e) => setDownloaded(e.target.checked)}
             />
-            <span>I have saved my recovery codes</span>
+            <span>{t('auth:totp.recovery_continue')}</span>
           </label>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-3 border-t border-border pt-4">
           <div className="space-y-2">
-            <Label htmlFor="totp">6-digit code from your authenticator app</Label>
+            <Label htmlFor="totp">{t('auth:totp.code_label')}</Label>
             <Input
               id="totp"
               type="text"
@@ -209,12 +213,11 @@ export default function EnrollTotpPage() {
               maxLength={6}
               value={code}
               onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
-              placeholder="000000"
+              placeholder={t('auth:totp.code_placeholder')}
               required
               disabled={submitting}
             />
           </div>
-          {/* V15.0 WS6 — Trust this device */}
           <div className="flex items-center gap-2 pt-2 border-t border-border">
             <input
               type="checkbox"
@@ -224,7 +227,7 @@ export default function EnrollTotpPage() {
               disabled={submitting}
             />
             <label htmlFor="trust-device-enroll" className="text-sm cursor-pointer flex-1">
-              Trust this device
+              {t('auth:totp.trust_device')}
             </label>
             <select
               value={trustDays}
@@ -234,17 +237,16 @@ export default function EnrollTotpPage() {
               disabled={!trustDevice || submitting}
               className="text-xs bg-muted px-2 py-1 rounded border border-border disabled:opacity-40"
             >
-              <option value={1}>1 day</option>
-              <option value={3}>3 days</option>
-              <option value={7}>7 days</option>
-              <option value={15}>15 days</option>
-              <option value={30}>30 days</option>
+              <option value={1}>{t('auth:totp.trust_days_1')}</option>
+              <option value={3}>{t('auth:totp.trust_days_3')}</option>
+              <option value={7}>{t('auth:totp.trust_days_7')}</option>
+              <option value={15}>{t('auth:totp.trust_days_15')}</option>
+              <option value={30}>{t('auth:totp.trust_days_30')}</option>
             </select>
           </div>
           {trustDevice && (
             <p className="text-xs text-muted-foreground">
-              Skip 2FA on this browser for {trustDays} day{trustDays > 1 ? 's' : ''}. Sicuro
-              solo su dispositivi personali. Logout o revoca admin annullano subito.
+              {t('auth:totp.trust_hint', { count: trustDays })}
             </p>
           )}
 
@@ -254,7 +256,7 @@ export default function EnrollTotpPage() {
             className="w-full"
             disabled={submitting || code.length !== 6 || !downloaded}
           >
-            {submitting ? 'Verifying…' : 'Confirm and sign in'}
+            {submitting ? t('auth:totp.verifying') : t('auth:totp.verify_button')}
           </Button>
         </form>
       </div>

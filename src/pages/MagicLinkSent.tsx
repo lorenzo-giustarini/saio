@@ -2,11 +2,14 @@
  * V15.0 WS3+WS6 — Landing dopo invio magic-link.
  * Anti-enumeration: stesso messaggio per email allowed/unknown.
  * WS6: countdown 60s + Resend button (rate-limit aware).
+ * V15.9 WS43: i18n IT/EN/ES.
  */
 import { useEffect, useState } from 'react'
+import { useTranslation, Trans } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
 import { api } from '@/lib/api'
 import { Button } from '@/components/ui/button'
+import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 
 const COUNTDOWN_SECONDS = 60
 
@@ -16,6 +19,7 @@ export default function MagicLinkSentPage() {
   const [params] = useSearchParams()
   const email = params.get('email') || ''
   const purpose = params.get('purpose') || 'login'
+  const { t } = useTranslation(['auth', 'common'])
 
   const [secondsLeft, setSecondsLeft] = useState(COUNTDOWN_SECONDS)
   const [resending, setResending] = useState(false)
@@ -23,16 +27,9 @@ export default function MagicLinkSentPage() {
 
   useEffect(() => {
     if (secondsLeft <= 0) return
-    const t = window.setTimeout(() => setSecondsLeft((s) => s - 1), 1000)
-    return () => window.clearTimeout(t)
+    const tm = window.setTimeout(() => setSecondsLeft((s) => s - 1), 1000)
+    return () => window.clearTimeout(tm)
   }, [secondsLeft])
-
-  const title =
-    purpose === 'claim'
-      ? 'Check your inbox to claim'
-      : purpose === 'invite'
-      ? 'Invitation sent — check your inbox'
-      : 'Check your inbox'
 
   const canResend = secondsLeft <= 0 && !resending && email
   const progress = ((COUNTDOWN_SECONDS - secondsLeft) / COUNTDOWN_SECONDS) * 100
@@ -42,15 +39,13 @@ export default function MagicLinkSentPage() {
     setResending(true)
     setResendStatus(null)
     try {
-      // Solo per purpose='login' ha senso il resend (claim usa /api/auth/claim/start
-      // che richiede il token + email — non gestiamo qui).
       if (purpose !== 'login') {
         setResendStatus('error')
         return
       }
       await api.auth.requestLink(email)
       setResendStatus('success')
-      setSecondsLeft(COUNTDOWN_SECONDS) // restart countdown
+      setSecondsLeft(COUNTDOWN_SECONDS)
     } catch (err) {
       const msg = err instanceof Error ? err.message : ''
       if (msg.includes('429')) setResendStatus('rate_limited')
@@ -62,27 +57,34 @@ export default function MagicLinkSentPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-6">
-      <div className="max-w-md w-full p-6 border border-border rounded-lg bg-card text-center space-y-4">
-        <div className="text-5xl">📬</div>
-        <h1 className="text-xl font-semibold">{title}</h1>
+    <div className="min-h-screen flex items-center justify-center bg-background p-4 sm:p-6">
+      <div className="max-w-md w-full p-5 sm:p-6 border border-border rounded-lg bg-card text-center space-y-4">
+        <div className="flex items-start justify-end -mb-2">
+          <LanguageSwitcher />
+        </div>
+        <div className="text-4xl sm:text-5xl">📬</div>
+        <h1 className="text-lg sm:text-xl font-semibold">{t('auth:magic_sent.title')}</h1>
         <p className="text-sm text-muted-foreground">
-          {email ? (
-            <>
-              If <span className="font-medium text-foreground">{email}</span> is authorized,
-            </>
-          ) : (
-            'If this email is authorized,'
-          )}{' '}
-          a sign-in link has been sent. Expires in 15 minutes and can be used once.
+          <Trans
+            t={t}
+            i18nKey={purpose === 'claim' ? 'auth:magic_sent.body_claim' : 'auth:magic_sent.body_login'}
+            values={{ email }}
+            components={{ strong: <span className="font-medium text-foreground" /> }}
+          />
         </p>
+        <p className="text-xs text-muted-foreground">{t('auth:magic_sent.expires_hint')}</p>
 
         <div className="pt-3 border-t border-border space-y-3">
           {secondsLeft > 0 ? (
             <>
               <div className="text-xs text-muted-foreground">
-                Didn't receive it? You can resend in{' '}
-                <span className="font-mono font-medium text-foreground">{secondsLeft}s</span>
+                <Trans
+                  t={t}
+                  i18nKey={'auth:magic_sent.countdown'}
+                  defaults="Resend available in <strong>{{count}}s</strong>"
+                  values={{ count: secondsLeft }}
+                  components={{ strong: <span className="font-mono font-medium text-foreground" /> }}
+                />
               </div>
               <div className="w-full bg-muted h-1 rounded-full overflow-hidden">
                 <div
@@ -100,44 +102,28 @@ export default function MagicLinkSentPage() {
               size="sm"
               className="w-full"
             >
-              {resending ? 'Sending…' : 'Resend link'}
+              {resending ? t('auth:magic_sent.resending') : t('auth:magic_sent.resend_button')}
             </Button>
           )}
 
           {resendStatus === 'success' && (
-            <div className="text-xs text-emerald-500">Link resent — check your inbox</div>
+            <div className="text-xs text-emerald-500">{t('auth:magic_sent.resend_success', { defaultValue: 'Link resent — check your inbox.' })}</div>
           )}
           {resendStatus === 'rate_limited' && (
-            <div className="text-xs text-amber-500">
-              Too many requests. Wait 15 minutes and retry from{' '}
-              <a href="/login" className="underline">
-                /login
-              </a>
-              .
-            </div>
+            <div className="text-xs text-amber-500">{t('auth:login.errors.rate_limit')}</div>
           )}
           {resendStatus === 'not_authorized' && (
-            <div className="text-xs text-amber-500">Dashboard not yet bootstrapped.</div>
+            <div className="text-xs text-amber-500">{t('auth:login.errors.not_claimed')}</div>
           )}
           {resendStatus === 'error' && (
-            <div className="text-xs text-red-500">
-              Could not resend. Try{' '}
-              <a href="/login" className="underline">
-                /login
-              </a>{' '}
-              again.
-            </div>
+            <div className="text-xs text-red-500">{t('auth:login.errors.generic')}</div>
           )}
 
-          {purpose !== 'login' && (
-            <div className="text-xs text-muted-foreground pt-2">
-              For claim/invite resend, restart the flow from{' '}
-              <a href={purpose === 'claim' ? '/claim' : '/login'} className="underline">
-                {purpose === 'claim' ? '/claim?token=…' : '/login'}
-              </a>
-              .
-            </div>
-          )}
+          <div className="text-xs text-muted-foreground">{t('auth:magic_sent.spam_hint')}</div>
+
+          <a href="/login" className="block text-xs underline text-primary">
+            {t('auth:magic_sent.back_to_login')}
+          </a>
         </div>
       </div>
     </div>
