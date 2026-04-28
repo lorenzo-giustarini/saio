@@ -29,7 +29,7 @@ if ($supabaseToken) {
 }
 
 # 2) Workflows local logs (se presenti)
-$workflowsDir = "C:\Users\info\Desktop\CLAUDE WORLD\onweb24-dev"
+$workflowsDir = if ($env:SAIO_ONWEB24_DEV_DIR) { $env:SAIO_ONWEB24_DEV_DIR } else { Join-Path $env:USERPROFILE 'Desktop\CLAUDE WORLD\onweb24-dev' }
 if (Test-Path $workflowsDir) {
     Get-ChildItem -Path $workflowsDir -Recurse -Filter "*.log" -ErrorAction SilentlyContinue |
         Where-Object { $_.LastWriteTime -gt (Get-Date).AddHours(-24) } |

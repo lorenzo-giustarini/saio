@@ -4,7 +4,7 @@
 
 $ErrorActionPreference = 'Continue'
 
-$agencyOsLogs = "C:\Users\info\Desktop\CLAUDE WORLD\AgencyOS\.claude\logs"
+$agencyOsLogs = if ($env:SAIO_AGENCYOS_LOGS_DIR) { $env:SAIO_AGENCYOS_LOGS_DIR } else { Join-Path $env:USERPROFILE 'Desktop\CLAUDE WORLD\AgencyOS\.claude\logs' }
 $vaultDir = Join-Path $env:USERPROFILE '.claude\projects\C--Users-info-Desktop-CLAUDE-WORLD\memory\logs\agency-os'
 $today = Get-Date -Format 'yyyy-MM-dd'
 $tarFile = Join-Path $vaultDir "$today.tar.gz"

@@ -2,7 +2,7 @@
 name = "saio"
 version = "1.0.0"
 description = "SAIO - Smart AI Office (cross-platform Tauri 2 port)"
-authors = ["Revolution Marketing <info@revolutionmarketing.us>"]
+authors = ["Lorenzo Giustarini <lorenzo@revolutionmarketing.us>"]
 edition = "2021"
 rust-version = "1.77"
 

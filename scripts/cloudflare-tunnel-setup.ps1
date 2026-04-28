@@ -114,7 +114,7 @@ Write-Host ""
 Write-Host "(Optional) Cloudflare Access policy (secondo strato):" -ForegroundColor Gray
 Write-Host "   1. Cloudflare dashboard -> Zero Trust -> Access -> Applications" -ForegroundColor Gray
 Write-Host "   2. Add Application -> Self-hosted -> $Hostname" -ForegroundColor Gray
-Write-Host "   3. Policy: include emails [info@revolutionmarketing.us]" -ForegroundColor Gray
+Write-Host "   3. Policy: include emails [your-email@example.com]" -ForegroundColor Gray
 Write-Host "   4. Save -> Cloudflare Access blocchera' chi non ha email autorizzata" -ForegroundColor Gray
 Write-Host "      PRIMA che la request arrivi a SAIO (doppio strato)" -ForegroundColor Gray
 Write-Host ""

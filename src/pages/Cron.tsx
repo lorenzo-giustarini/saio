@@ -506,7 +506,7 @@ export function CronPage() {
               <Textarea
                 value={newCommand}
                 onChange={(e) => setNewCommand(e.target.value)}
-                placeholder='Es. & "C:\Users\info\.claude\projects\C--Users-info-Desktop-CLAUDE-WORLD\memory\scripts\run-mio-script.ps1"'
+                placeholder='Es. & "$env:USERPROFILE\scripts\run-mio-script.ps1" oppure /home/user/scripts/run.sh'
                 className="text-xs font-mono min-h-[80px]"
                 maxLength={2000}
               />

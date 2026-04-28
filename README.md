@@ -1,545 +1,339 @@
-# SAIO Dashboard
+<div align="center">
 
-> Operativa dashboard self-hosted per orchestrare sessioni Claude in parallelo
-> su progetti distinti, con gestione decisioni Morning/EOD via UI invece di email.
-> Single-owner, magic-link auth con 2FA, opzionale Cloudflare Tunnel per accesso pubblico.
+# SAIO
 
-## Indice
+### Smart AI Office — Cross-platform desktop dashboard for AI project orchestration
 
-- [Cosa fa SAIO](#cosa-fa-saio)
-- [Quick start (5 minuti)](#quick-start-5-minuti)
-- [Setup completo](#setup-completo)
-- [Architettura](#architettura)
-- [Dipendenze](#dipendenze)
-- [Esposizione pubblica via Cloudflare](#esposizione-pubblica-via-cloudflare)
-- [Auth recovery](#auth-recovery)
-- [Troubleshooting](#troubleshooting)
-- [FAQ](#faq)
-- [Politica d'uso (abuse policy)](#politica-duso-abuse-policy)
-- [Contributing](#contributing)
-- [Licenza](#licenza)
+[![License: PolyForm-NC-1.0.0](https://img.shields.io/badge/License-PolyForm--NC--1.0.0-blue.svg)](LICENSE)
+[![Tauri 2](https://img.shields.io/badge/Tauri-2.x-FFC131?logo=tauri)](https://tauri.app)
+[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey)](#installation)
+[![Status](https://img.shields.io/badge/status-1.0.0--beta-yellow)](https://github.com/lorenzo-giustarini/saio/releases)
+
+</div>
 
 ---
 
-## Cosa fa SAIO
+## Status
 
-- **Inbox decisioni**: brief JSON in `data/briefs/` mostrati come card con
-  Causa / Effetto / Rischi / Soluzione + bottoni Sì/No/Skip + dettatura vocale italiana
-- **Orchestrator multi-terminal**: spawn N terminali Windows CMD reali, uno per
-  progetto, ognuno con sessione `claude` CLI dedicata + file kickoff contestuale
-- **Task live**: progress, token usati, ETA, controlli Pause/Kill, log drawer
-  con tail SSE
-- **Progetti attivi**, **Archivio decisioni**, **Metriche** (token chart + vault
-  health), **Extras** (MCP status, Costs tracker, Credenziali inventory, ⌘K palette)
-- **Auth single-owner**: claim flow al primo run + magic link + TOTP + recovery
-  codes + opzionale "Trust this device" 1-30 giorni
-- **Multi-VPS error pipeline**: aggregazione errori cron-multi-host + dispatch
-  fix automatici
-- **Knowledge browser** (opzionale): naviga vault Obsidian se configurato
-- **Wizard onboarding**: setup email provider via browser (Gmail / Outlook /
-  iCloud / Aruba / Mailgun / SendGrid / dominio custom) con validazione SMTP live
+**v1.0.0-beta** — Windows production-ready. Linux + macOS code complete (full Platform Abstraction Layer) but awaiting community validation. See [ROADMAP.md](ROADMAP.md) and [TESTING.md](TESTING.md) if you want to help.
 
 ---
 
-## Quick start (5 minuti)
+## What is SAIO?
 
-```bash
-# 1. Clone + dipendenze
-git clone https://github.com/<your-fork>/saio-dashboard.git
-cd saio-dashboard
-npm install     # auto-trigger postinstall: dependency check report
+SAIO is a desktop application that orchestrates multiple AI provider sessions (Claude, OpenAI, Google Gemini, fal.ai) in parallel, manages local cron jobs, embeds terminal sessions for CLI tools (Claude Code, Codex, Gemini CLI), and integrates with your Obsidian vault — all from a single native window.
 
-# 2. (Se mancano dipendenze critiche) installa via wizard automatico
-npm run setup:deps    # interactive: detect + install Node/Python/Claude CLI
+It started as an internal tool at Revolution Marketing LLC for running 8+ Claude Code sessions simultaneously on different client projects without losing context. It is now released as source-available software for non-commercial use.
 
-# 3. Avvia dashboard
-npm run dev:all       # Vite (3030) + Express (3031) in parallelo
+**Built with**: Tauri 2 (Rust shell), React 19 + TypeScript + Vite (frontend), Express + Node.js (sidecar backend), Platform Abstraction Layer for cross-OS support.
 
-# 4. Browser → claim flow
-# Nel terminale appare un banner CLAIM TOKEN. Apri:
-#   http://127.0.0.1:3030/claim?token=<TOKEN>
-# (TTL 24h default, configurabile via DASHBOARD_AUTH_CLAIM_TTL_MIN env)
+## Why SAIO?
 
-# 5. Wizard guidato apre automaticamente:
-#    - scelta email provider (Gmail / dominio / Resend / dev mode)
-#    - email entry + magic link → click in inbox
-#    - enroll TOTP (scan QR con Google Authenticator/Authy/etc.)
-#    - download recovery codes (10 codici single-use)
-#    - opzionale "Trust this device" 1-30 giorni
-#    → /inbox: dentro la dashboard
-```
+| | SAIO (Tauri) | Typical Electron alternatives |
+|---|---|---|
+| Bundle size | ~18 MB | ~150 MB |
+| RAM footprint | ~80 MB | ~300 MB |
+| Native PTY | Yes (ConPTY/forkpty) | Often web-shim |
+| Native task scheduler | Yes (schtasks/systemd/launchd) | Usually polyfilled |
+| Cold start | <1s | 2-4s |
 
-Se il claim token scade (default 24h): nessun panico, esegui:
+The cost: Tauri uses the OS webview (Edge WebView2 / WebKitGTK / WKWebView) so behavior may vary slightly across browsers. We test on Chrome-equivalent webview engines.
 
-```bash
-npm run claim:reissue    # rigenera token senza restart server
-```
+## Features
 
----
+- **Multi-provider AI orchestration**: switch active account between Anthropic, OpenAI, Google, fal.ai with one click — auto-detected from environment variables on first launch
+- **Embedded terminals**: native PTY (ConPTY on Windows, forkpty on Unix) for `claude`, `codex`, `gemini`, and any CLI you point it at — full ANSI color, scroll-back, and resize support
+- **Native cron jobs**: create scheduled tasks via OS-native scheduler — Windows Task Scheduler, Linux systemd-timer, macOS launchd. Toggle on/off without admin prompts thanks to a one-time elevator setup.
+- **Project workspace**: each project gets its own folder, kickoff context file, isolated terminal session, and lifecycle (active → archive → delete with explicit confirm)
+- **Inbox decisions**: brief JSON files in `data/briefs/` shown as cards with cause / effect / risks / proposed solution + Yes/No/Skip buttons + voice input
+- **Obsidian vault renderer**: read-only Markdown viewer with file tree, link resolution, image preview
+- **Self-hosted auth**: claim flow on first launch, magic link via SMTP/Resend, TOTP 2FA, recovery codes, JWT cookie sessions
+- **Atomic-write hardening**: all state files (accounts, projects, tasks) written via temp + rename with retry/backoff for Windows AV interference
+- **Auto-update** (opt-in): via `tauri-updater` pointing to GitHub Releases
 
-## Setup completo
+## Screenshots
 
-### Email provider (richiesto per magic link)
+> Screenshots will be added in `docs/screenshots/`. PRs welcome with `dashboard.png`, `cron.png`, `terminal.png` from any of the supported OSes.
 
-Il wizard browser ti guida step-by-step. Provider supportati:
+## Installation
 
-| Provider | SMTP | Note |
-|----------|------|------|
-| **Gmail** (raccomandato) | smtp.gmail.com:587 | richiede 2FA + App Password ([guida inline](https://myaccount.google.com/apppasswords)) |
-| **Outlook / Hotmail** | smtp-mail.outlook.com:587 | App Password se 2FA attivo |
-| **iCloud Mail** | smtp.mail.me.com:587 | App-specific Password da appleid.apple.com |
-| **Yahoo Mail** | smtp.mail.yahoo.com:587 | App Password |
-| **Aruba** | smtp.aruba.it:465 | password account Aruba |
-| **Register.it** | mail.register.it:465 | password account hosting |
-| **Mailgun** | smtp.mailgun.org:587 | username `postmaster@mg.tuodominio.com`, password SMTP (NON API key) |
-| **SendGrid** | smtp.sendgrid.net:587 | username `apikey`, password = API key SendGrid |
-| **Custom SMTP** | tuo dominio | host/port/user/pass manuali |
-| **Resend** | API | richiede dominio verificato + DNS SPF/DKIM |
-| **Dev mode** | console | magic link in stdout (no email reali) — solo dev locale |
+### Pre-built installer (recommended)
 
-Validazione live: appena inserisci la password e fai blur dal campo, il backend
-prova handshake SMTP + AUTH check. Risultato:
-- ✓ verde "Connessione SMTP verificata" → bottone Salva si abilita
-- ⚠️ rosso con messaggio specifico (Credenziali errate / Host non trovato / TLS / etc.)
+Download the latest installer from [Releases](https://github.com/lorenzo-giustarini/saio/releases) for your OS:
 
-### Hosting SMTP (importante)
+| OS | File | Notes |
+|----|------|-------|
+| Windows 10/11 | `SAIO_<version>_x64-setup.exe` | NSIS installer, registers the elevator task automatically. Defender may flag the unsigned binary — click "More info" → "Run anyway". |
+| Ubuntu / Debian | `saio_<version>_amd64.deb` | `sudo dpkg -i saio_<version>_amd64.deb` |
+| Linux portable | `saio_<version>_amd64.AppImage` | `chmod +x` then double-click |
+| macOS Apple Silicon | `SAIO_<version>_aarch64.dmg` | Drag to Applications. Right-click → Open the first time, or run `xattr -d com.apple.quarantine /Applications/SAIO.app` |
+| macOS Intel | `SAIO_<version>_x64.dmg` | Same as above |
 
-Se usi SMTP del **tuo dominio** (cPanel, ChemiCloud, Aruba, Register, Plesk),
-l'**email destinataria del claim deve essere una casella dello stesso dominio**.
-La maggior parte degli hosting NON è open-relay verso domini esterni. Se vuoi
-inviare a destinatari arbitrari, usa Mailgun / SendGrid / Resend (servizi
-transazionali progettati per questo).
+### Build from source
 
-### TOTP enrollment
+See [Building from source](#building-from-source) below.
 
-Dopo magic link verify, ti viene mostrato un QR code. Scansiona con:
-- Google Authenticator
-- Authy
-- Microsoft Authenticator
-- 1Password (TOTP)
-- Bitwarden (TOTP)
-- qualunque app che supporti TOTP standard (RFC 6238)
+## Quick Start
 
-Salva i 10 recovery codes in un password manager. Single-use, ti servono se
-perdi l'authenticator.
+After installation, launch SAIO. The first run goes through:
 
-### Trust this device
+1. **Claim**: a one-time setup form where you pick the owner email + password and paste the claim token (auto-generated by the backend on first launch — find it printed in stdout or at `<data-dir>/auth/CLAIM-TOKEN.txt`).
+2. **SMTP / Resend setup**: enter credentials so SAIO can send the magic-link email. Gmail with [App Password](https://myaccount.google.com/apppasswords) works fine.
+3. **Magic link**: open the email SAIO sends to the owner address, click the link.
+4. **TOTP enrollment**: scan the QR with Google Authenticator / Authy / 1Password and enter the 6-digit code.
+5. **Recovery codes**: save the 10 single-use recovery codes somewhere safe.
 
-Opzionale, default OFF. Se selezionato:
-- Cookie `saio_trusted` long-lived (1/3/7/15/30 giorni a scelta)
-- Bypass TOTP su questo browser per la durata scelta
-- Revocabile via logout o admin revoke (se sei guest)
+You're now in the dashboard. The header dropdown shows auto-detected providers (based on environment variables: `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GEMINI_API_KEY`, `FAL_KEY`). Pick one and start working.
 
----
+### Data location
 
-## Architettura
+| OS | Data directory |
+|----|----------------|
+| Windows | `%APPDATA%\saio\` |
+| Linux | `$XDG_CONFIG_HOME/saio/` (default `~/.config/saio/`) |
+| macOS | `~/Library/Application Support/saio/` |
+
+Inside you'll find: `accounts.json`, `projects.json`, `auth/`, `briefs/`, `responses/`, `tasks/`, `logs/`, `archive/`. **All gitignored** in this repo — your data never leaves your machine.
+
+## Architecture
 
 ```
-┌─────────────────────────────────────────────────────┐
-│  Browser (3030 Vite + proxy /api → 3031 Express)    │
-│  React 19 + TS + Tailwind + shadcn + TanStack Query │
-└─────────────────────────────────────────────────────┘
-                        │
-                        ▼
-┌─────────────────────────────────────────────────────┐
-│  Express backend (3031, bind 127.0.0.1)             │
-│  helmet CSP + JWT cookies + magic link + TOTP       │
-└─────────────────────────────────────────────────────┘
-                        │
-                        ▼
-┌─────────────────────────────────────────────────────┐
-│  Python orchestrator (psutil + watchdog + pywinpty) │
-│  Spawn N CMD windows con sessioni Claude CLI live   │
-└─────────────────────────────────────────────────────┘
-                        │
-                        ▼
-┌─────────────────────────────────────────────────────┐
-│  data/                                              │
-│  ├── auth/    (claim, sessions, totp, audit)        │
-│  ├── briefs/  (input Claude)                        │
-│  ├── responses/                                     │
-│  ├── tasks/   (live state)                          │
-│  ├── archive/                                       │
-│  └── audit/                                         │
-└─────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│  Tauri Shell (Rust ~300 LOC)                                │
+│  • Window management (1280x800, dark, resizable)            │
+│  • Sidecar lifecycle (spawn Express on launch, kill on quit)│
+│  • Auto-update via tauri-updater                            │
+└──────────────────────┬──────────────────────────────────────┘
+                       │ spawns
+                       ▼
+┌─────────────────────────────────────────────────────────────┐
+│  Sidecar Express Backend (Node.js + TypeScript)             │
+│  • REST API on 127.0.0.1:3031                               │
+│  • Auth (JWT cookie, magic link, TOTP)                      │
+│  • PTY manager (ConPTY/forkpty per project)                 │
+│  • Cron orchestrator                                        │
+│  • Account auto-detection                                   │
+└──────────────────────┬──────────────────────────────────────┘
+                       │ uses
+                       ▼
+┌─────────────────────────────────────────────────────────────┐
+│  Platform Abstraction Layer (server/lib/platform/)          │
+│  ┌─────────────┬─────────────┬─────────────┐                │
+│  │  Windows    │   Linux     │    macOS    │                │
+│  │ schtasks    │ systemd     │ launchd     │ TaskScheduler  │
+│  │ winget      │ apt/dnf/yum │ brew        │ PackageManager │
+│  │ cmd.exe     │ bash/zsh    │ zsh         │ Shell          │
+│  │ schtasks    │ pkexec/sudo │ osascript   │ Elevator       │
+│  │ %APPDATA%   │ XDG_*       │ ~/Library/* │ Paths          │
+│  └─────────────┴─────────────┴─────────────┘                │
+└─────────────────────────────────────────────────────────────┘
+                       ▲
+                       │ HTTP + Vite proxy
+                       │
+┌──────────────────────┴──────────────────────────────────────┐
+│  Frontend (Vite dev / static bundle)                        │
+│  React 19 + TypeScript + TailwindCSS + shadcn/ui            │
+│  • Inbox, Tasks, Projects, Cron, Vault, Metrics pages       │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-**Stack tecnico**:
-- **Frontend**: Vite 6 + React 19 + TypeScript + Tailwind v3.4 + shadcn/ui
-- **Backend**: Express 4 + helmet + Zod + chokidar (filewatch SSE) + cookie-parser
-- **Auth**: JWT (jsonwebtoken) + nodemailer (SMTP) / Resend (API) + otplib (TOTP) + bcryptjs (recovery codes)
-- **Orchestrator**: Python 3.11+ con psutil/watchdog/pywinpty
-- **State**: TanStack Query (polling 5-60s) + SSE push (filewatch)
-- **Native deps**: node-pty (xterm in browser via WebSocket)
+For the deep dive see [ARCHITECTURE.md](ARCHITECTURE.md).
 
----
+## Building from source
 
-## Dipendenze
+### Prerequisites (all OSes)
 
-| Categoria | Componenti | Auto-install |
-|-----------|-----------|--------------|
-| **CRITICAL** | Node 20+, npm, Claude CLI | `npm run setup:deps` (postinstall + manuale) |
-| **CRITICAL** | node-pty (compile native) | `npm install` (richiede VS Build Tools su Win) |
-| **CORE** | Python 3.11+, psutil, watchdog, pywinpty | `setup-deps.ps1`/`.sh` crea venv + pip install |
-| **OPTIONAL** | Playwright (browser custom providers) | `npx playwright install` |
-| **OPTIONAL** | Cloudflared (deploy pubblico) | wizard browser o script manuale |
-| **OPTIONAL** | Obsidian (vault knowledge browser) | install dal sito ufficiale |
+- **Node.js 20+** — `node --version` should report v20+
+- **Rust 1.77+** — install via [rustup.rs](https://rustup.rs)
+- **Tauri CLI 2.x** — `cargo install tauri-cli@^2`
+- **Git** + **Python 3.11+** (some helper scripts use Python)
 
-**Banner runtime check**: la dashboard mostra automaticamente un banner ambra
-in cima se manca qualche dipendenza critical, con comandi copy-paste e link
-install.
+### Windows-specific
 
----
-
-## Esposizione pubblica via Cloudflare
-
-Hai due opzioni per accedere alla dashboard da fuori casa:
-
-### Opzione A: wizard browser (raccomandato)
-
-Dopo il primo claim, in dashboard sidebar trovi "Setup pubblico (Cloudflare)".
-Wizard step-by-step ti guida a:
-1. Verifica che il dominio sia su Cloudflare DNS
-2. Install cloudflared (1-click winget/brew/apt)
-3. Login OAuth Cloudflare
-4. Crea tunnel + DNS route
-5. Verifica connection
-6. (Opzionale) Cloudflare Access policy email-allowlist come secondo strato
-
-### Opzione B: PDF download + script manuale
-
-Scarica `docs/SAIO-cloudflare-setup-guide.pdf` (in repo) per istruzioni complete
-con screenshots. Per Windows è disponibile anche:
+- **Visual Studio Build Tools 2022** with MSVC v143 + Windows 11 SDK — download from [visualstudio.microsoft.com](https://visualstudio.microsoft.com/downloads/)
+- **WebView2 Runtime** — pre-installed on Win 10 21H1+ and Win 11; otherwise grab the [Evergreen Standalone Installer](https://developer.microsoft.com/microsoft-edge/webview2)
 
 ```powershell
-pwsh scripts/cloudflare-tunnel-setup.ps1 -Hostname saio.tuodominio.com
-pwsh scripts/cloudflare-tunnel-run.ps1
+git clone https://github.com/lorenzo-giustarini/saio.git
+cd saio
+npm install
+cargo tauri dev    # dev mode with hot reload
+# or
+cargo tauri build --bundles nsis    # produces SAIO_<ver>_x64-setup.exe
 ```
 
-### Cloudflare Access policy (raccomandato come 2° strato)
-
-Pre-bootstrap, l'unica difesa è il claim token TTL 24h. Per chiudere quella
-finestra con un secondo strato:
-
-1. Cloudflare dashboard → **Zero Trust** → **Access** → **Applications**
-2. Add Application → **Self-hosted** → host: `saio.tuodominio.com`
-3. Policy: include `Emails` → `tu@tuodominio.com`
-4. Salva. Cloudflare Access ora blocca chi non è in allowlist PRIMA che la
-   request arrivi a SAIO.
-
----
-
-## Auth recovery
-
-Tutto lo stato auth è in `data/auth/` (gitignored). Non esiste reset web.
-
-### Reset owner (perdita TOTP + recovery codes)
+### Linux-specific (Ubuntu 22.04+ tested)
 
 ```bash
-ssh user@vps
-cd /path/to/saio
-rm data/auth/owner.json data/auth/totp-secrets.json data/auth/recovery-codes.json \
-   data/auth/sessions.json data/auth/allowed-emails.json data/auth/claim-state.json
-pm2 restart dashboard   # o systemctl
-# Log mostra nuovo CLAIM TOKEN. Vai a https://<tunnel>/claim?token=<NEW>
+sudo apt update && sudo apt install -y \
+    libwebkit2gtk-4.1-dev \
+    libgtk-3-dev \
+    libappindicator3-dev \
+    librsvg2-dev \
+    patchelf \
+    build-essential \
+    curl wget file
+# Then:
+git clone https://github.com/lorenzo-giustarini/saio.git
+cd saio
+npm install
+cargo tauri dev
+# or
+cargo tauri build --bundles deb appimage
 ```
 
-### Reissue claim token senza restart
+There's a helper: `scripts/setup-deps-linux.sh` auto-installs everything (auto-detects apt/dnf/pacman).
+
+### macOS-specific (13+ Ventura/Sonoma)
 
 ```bash
-npm run claim:reissue
-# Genera nuovo token + cancella vecchio. Server in esecuzione vede subito.
+xcode-select --install                # Command Line Tools
+brew install node python@3.11 git
+git clone https://github.com/lorenzo-giustarini/saio.git
+cd saio
+npm install
+cargo tauri dev
+# or
+cargo tauri build --bundles dmg app
 ```
 
-### Sblocco solo 2FA
+There's a helper: `scripts/setup-deps-macos.sh` auto-installs everything via Homebrew.
+
+### Running tests
 
 ```bash
-rm data/auth/totp-secrets.json data/auth/recovery-codes.json
-pm2 restart dashboard
-# Next login per chiunque in allowlist → re-enroll TOTP
+npm run typecheck    # TypeScript strict mode check
+npm run lint         # ESLint
+# (additional unit/integration tests in v1.1+)
 ```
 
-### Revoke globale sessioni (cookie sospetto leakato)
+### Common build errors
+
+- **Windows: "linker 'link.exe' not found"** → install Visual Studio Build Tools 2022 with MSVC v143
+- **Linux: "package webkit2gtk-4.1 was not found"** → run `scripts/setup-deps-linux.sh`
+- **macOS: "xcrun: error: invalid active developer path"** → run `xcode-select --install`
+- **All: "Defender/AV deletes node-pty.node"** → add the repo folder to AV exclusions during build
+
+See [TESTING.md](TESTING.md) for full smoke test procedure after install.
+
+## Configuration
+
+### Environment variables (optional)
+
+Copy `.env.example` to `.env.local` and fill the parts you need:
 
 ```bash
-echo '{"version":1,"sessions":[]}' > data/auth/sessions.json
-pm2 restart dashboard
-# Tutti gli utenti vedono 401 → re-login richiesto
+# Backend ports (defaults shown)
+VITE_PORT=3030
+SERVER_PORT=3031
+
+# Vault path for Obsidian renderer (optional)
+VAULT_PATH=/path/to/your/obsidian-vault
+
+# Auth required (true in production, false skips auth — dev only!)
+DASHBOARD_AUTH_REQUIRED=true
+
+# Email provider for magic link (pick ONE: SMTP, Resend, or debug)
+DASHBOARD_AUTH_FROM=
+DASHBOARD_AUTH_SMTP_HOST=                 # e.g. smtp.gmail.com
+DASHBOARD_AUTH_SMTP_PORT=587
+DASHBOARD_AUTH_SMTP_USER=
+DASHBOARD_AUTH_SMTP_PASS=                 # Gmail App Password (16 chars)
+
+# OR Resend API
+DASHBOARD_AUTH_RESEND_API_KEY=
+
+# OR debug mode: prints magic link to stdout (dev only)
+DASHBOARD_AUTH_DEBUG_MAGIC_LINK=false
+
+# AI provider keys (auto-detected at startup)
+ANTHROPIC_API_KEY=
+OPENAI_API_KEY=
+GEMINI_API_KEY=
+FAL_KEY=
 ```
 
-### Rotazione JWT secret
+The auto-detection scan adds an account entry per detected key. You can also add custom providers later through the UI.
 
-```bash
-rm data/auth/.jwt-secret
-echo '{"version":1,"sessions":[]}' > data/auth/sessions.json
-pm2 restart dashboard
+### Project structure
+
 ```
-
-### Ban manuale IP
-
-Edita `data/auth/banned-ips.json`:
-
-```json
-{"version":1,"bans":[{"ip":"1.2.3.4","bannedAt":"<ISO>","expiresAt":null,"reason":"manual","failCount":0}]}
+saio/
+├── src/                    # React frontend (Vite + TS)
+│   ├── pages/              # Inbox, Tasks, Projects, Cron, Vault, ...
+│   ├── components/         # Reusable UI (shadcn/ui based)
+│   ├── hooks/              # Custom React hooks
+│   └── lib/                # API client, utils
+├── server/                 # Express backend (TypeScript)
+│   ├── routes/             # REST endpoints
+│   ├── lib/                # Helpers, atomic-write, auth, ...
+│   │   └── platform/       # Platform Abstraction Layer (Win/Linux/macOS)
+│   └── index.ts            # Server entry
+├── src-tauri/              # Rust shell + Tauri config
+│   ├── src/lib.rs          # Sidecar lifecycle
+│   ├── tauri.conf.json     # Window, bundle, signer config
+│   └── installer-hooks.nsh # NSIS post-install elevator registration
+├── scripts/                # Cross-platform helpers (PS1 + bash + TS)
+│   ├── setup-deps-linux.sh
+│   ├── setup-deps-macos.sh
+│   ├── register-elevator.ps1
+│   └── ...
+├── .github/                # Issue/PR templates + Actions workflows
+├── data/                   # Runtime state (gitignored)
+└── docs/                   # Architecture, contributing, security
 ```
-
-No restart, file letto su ogni request.
-
----
-
-## Troubleshooting
-
-### Generale
-- **Dev server non parte**: verifica Node 20+ (`node --version`), reinstall `npm install`
-- **Orchestrator non spawna terminali**: verifica `claude` in PATH (`Get-Command claude` su Windows, `which claude` su Linux/Mac)
-- **Dettatura vocale non funziona**: solo Chrome/Edge (Web Speech API)
-- **Task "running" dopo crash**: lock stale puliti dopo 30s via psutil
-- **SSE non riceve eventi**: `curl http://127.0.0.1:3031/api/health` deve ritornare 200
-
-### "SESSIONE TERMINATA" sui task / orchestrator non parte
-
-**Causa più frequente**: orchestrator Python crasha al boot per dipendenze mancanti
-(`pywinpty` su Windows, `psutil`, `watchdog`).
-
-**Diagnostica** (V15.0 WS19):
-```bash
-npm run diag:orchestrator
-```
-Output mostra:
-- Python interpreter risolto (venv vs sistema)
-- Stato import per ogni dep richiesta
-- Tail dell'ultimo log spawn orchestrator
-- Suggerimento fix concreto
-
-**Fix automatico via UI**: dopo login, banner giallo in alto su Inbox → bottone
-**"Installa Python deps automaticamente"** → crea venv `orchestrator/.venv` e installa
-`requirements.txt` con streaming output. Riavvia il backend al termine.
-
-**Fix manuale**:
-```bash
-# 1. Crea venv + install
-npm run setup:deps
-
-# 2. Verifica
-npm run diag:orchestrator   # tutti ✓
-
-# 3. Riavvia backend
-# Ctrl+C nel terminale corrente
-npm run dev:all
-```
-
-**Verifica deps al volo**:
-```bash
-# Win
-.\orchestrator\.venv\Scripts\python.exe -c "import psutil, watchdog, winpty; print('ok')"
-
-# POSIX
-./orchestrator/.venv/bin/python -c "import psutil, watchdog; print('ok')"
-```
-
-**Log spawn orchestrator** (V15.0 WS19): `data/logs/orchestrator-spawn-*.log`
-contiene stdout+stderr di ogni spawn detached. Utili per identificare crash:
-```bash
-ls -lt data/logs/orchestrator-spawn-*.log | head -5
-cat data/logs/orchestrator-spawn-<latest>.log
-```
-
-### Auth
-
-#### Claim banner non viene stampato
-- Verifica `data/auth/owner.json` non esistente
-- Se esistente, dashboard è già claimato. Reset via SSH (vedi "Reset owner")
-
-#### Magic link non arriva
-- Test prima con DEBUG mode: `DASHBOARD_AUTH_DEBUG_MAGIC_LINK=true npm run dev:server` → link in stdout
-- Se DEBUG ok ma SMTP no: verifica credenziali nel wizard (validazione live deve essere ✓ verde)
-- Hosting tuo dominio (ChemiCloud/Aruba/cPanel): destinatario DEVE essere casella stesso dominio
-- Spam folder destinatario
-- Audit log `data/auth/audit.log` mostra esito
-
-#### TOTP code non valido
-- Drift orologio: tollera ±30s. Se telefono e server divergono di più, fail
-- Su VPS: verifica NTP sync (`timedatectl status`)
-- Code cambia ogni 30s. Inserisci CORRENTE
-- Recovery codes single-use: una volta usati, non si rigenerano
-
-#### "session_revoked" inatteso
-- Cookie scaduto (saio_at = 1h). Frontend prova silent refresh automatico
-- Se anche refresh (saio_rt = 7d) scaduto → redirect /login
-- Owner ha revocato → 401 immediato
-
-#### Cloudflare Tunnel
-- Errore CORS: `DASHBOARD_AUTH_TUNNEL_URL` in `.env.local` deve matchare esattamente l'URL del tunnel (no trailing slash)
-- 502 Bad Gateway: backend Express non listening su 127.0.0.1:3031
-- 1033/1034 Cloudflare: tunnel down. `cloudflared tunnel info <name>` per status
-
-#### Rate limit / IP ban
-- 6 magic-link/15min → 429
-- 5 TOTP fail → IP bannato 30min in `data/auth/banned-ips.json`
-- Sblocco: edit `banned-ips.json` rimuovendo entry, no restart
-
-### Diagnostic commands
-
-```bash
-# Auth state completo
-ls -la data/auth/
-cat data/auth/owner.json
-cat data/auth/claim-state.json | python -m json.tool
-
-# Audit log
-tail -20 data/auth/audit.log | python -m json.tool
-
-# Test endpoint health
-curl -i http://127.0.0.1:3031/api/health
-curl -i http://127.0.0.1:3031/api/auth/claim/status
-
-# Test cloudflared
-cloudflared tunnel info saio-dashboard
-cloudflared tunnel list
-
-# Test deps runtime
-npm run setup:deps -- --check-only
-```
-
----
-
-## FAQ
-
-**Q: Posso avere più owner?**
-A: No. Single-owner per design. Per "trasferire" ownership: SSH reset full wipe + nuovo claim.
-
-**Q: Devo configurare per forza email reale?**
-A: No in dev (`DASHBOARD_AUTH_DEBUG_MAGIC_LINK=true` stampa link in stdout). Sì in produzione.
-
-**Q: I miei guest possono diventare owner?**
-A: No. Guest accedono a `/inbox`, `/projects`, etc. NON vedono `/settings/access`.
-
-**Q: Cosa succede se perdo TOTP + recovery codes?**
-A: SSH alla VPS, segui "Reset owner" — wipa data/auth/, restart, nuovo claim.
-
-**Q: Login protetto contro brute force?**
-A: Sì. Rate limit 6 TOTP/15min/IP. 5 fail → ban 30min in `banned-ips.json`.
-
-**Q: Come ruoto JWT secret?**
-A: SSH → `rm data/auth/.jwt-secret && echo '{"version":1,"sessions":[]}' > data/auth/sessions.json && pm2 restart`. Tutti re-login.
-
-**Q: Funziona offline?**
-A: Frontend sì. Magic-link login richiede Internet. Dopo login, cookies offline 7gg.
-
-**Q: Cloudflare Access è obbligatorio?**
-A: No. Senza, il claim token TTL 24h + JWT cookie sono l'unica difesa. Access raccomandato come 2° strato in deploy pubblico.
-
-**Q: Obsidian è obbligatorio?**
-A: No, opzionale al 95%. Senza vault, solo `/docs` page mostra "vault non configurato". Il resto funziona normale.
-
-**Q: SAIO funziona su Mac/Linux/Windows?**
-A: Sì cross-platform. Setup automatico via brew (Mac), apt/dnf/pacman (Linux), winget (Windows).
-
----
-
-## Garanzie antidistruttive (cosa SAIO non fa mai senza tuo consenso)
-
-V15.0 WS18 introduce vincoli centralizzati per proteggere i tuoi dati:
-
-### File mai toccati senza consenso esplicito
-- I tuoi progetti importati con autoscan → SAIO registra solo metadata in `data/projects.json`. **Mai modifica i file dei progetti** automaticamente.
-- File con frontmatter YAML (note Obsidian) → preservati, mai sovrascritti.
-- `.git/`, `.obsidian/`, `.env*` esistenti → read-only per le sessioni Claude orchestrate.
-
-### Backup automatici pre-modifica
-- **Vault Obsidian autoconfig (WS17)**: PRIMA di generare il brief autoconfig,
-  SAIO crea uno ZIP completo del vault in `data/backups/obsidian-pre-autoconfig-<ts>.zip`.
-  Se il backup fallisce, l'autoconfig NON viene avviato. Path mostrato nel brief
-  per rollback facile.
-- **`.env.local` write**: backup automatico `.env.local.backup-<ts>` ogni volta
-  che il wizard scrive nuove credenziali.
-- **Auth reset**: `npm run auth:reset` crea backup `data/backups/auth-pre-reset-<ts>/`
-  con tutti i file auth prima di cancellarli. Niente perdita irreversibile.
-
-### Vincoli mandatori per sessioni Claude orchestrate
-Ogni brief generato da SAIO include la costante `ANTIDESTRUCTIVE_GUARDRAILS`:
-1. Nessun comando distruttivo automatico (rm -rf, git clean -fd, DROP, TRUNCATE) senza conferma esplicita
-2. Backup pre-modifica obbligatorio per operazioni > 10 file
-3. Conferma utente per azioni massive (> 10 file modificati/eliminati)
-4. Working dir constraint: lavora solo nella sotto-cartella indicata
-5. Preservazione file utente (frontmatter YAML, .git/, .obsidian/, .env*)
-6. Rollback su errore (no "fix" creativi che peggiorano)
-7. Limite 4h/1M token per sessione
-
-L'utente vede questi vincoli **PRIMA** di approvare un brief in Inbox.
-
-### Pre-flight git snapshot
-Quando l'orchestrator spawna una sessione Claude su un progetto git, SAIO
-salva snapshot `git status --porcelain` + commit hash in `data/sessions/<sid>/pre-state.txt`
-PRIMA di iniziare, così puoi confrontare lo stato pre/post.
-
-### Reset SAFE
-Mai eseguire `rm -rf data/auth/` a mano. Usa invece:
-
-```bash
-npm run auth:reset    # interattivo: mostra files che cancella + crea backup pre-reset
-```
-
-Cancella SOLO i file auth listati, mai progetti o brief o audit log.
-
-### Cosa SAIO NON installa mai senza consenso
-- Python, Claude CLI, Obsidian → installati solo dopo click esplicito utente nel wizard
-- VS Build Tools → suggerito solo se npm install fallisce su node-pty
-- Tutti i package ID hardcoded nel codice (`Obsidian.Obsidian`, `Cloudflare.cloudflared`, `Python.Python.3.11`) — niente input utente per evitare command injection
-
----
-
-## Politica d'uso (abuse policy)
-
-SAIO è uno strumento di automazione personale per semplificare workflow di
-sviluppo e gestione progetti. **L'utente è responsabile dell'uso che fa di
-SAIO** e degli effetti su altri sistemi che SAIO orchestra.
-
-**Non usare SAIO per**:
-- Spam, mailing massivi non consensuali, scraping aggressivo
-- Bypassare ToS dei provider AI (Anthropic, Google, OpenAI, ecc.) o di altri
-  servizi (es. evadere rate limits, condividere account, abusare offerte trial)
-- Attività illegali nel paese di residenza dell'utente
-- Diffusione di malware o impersonificazione di terzi
-- Operazioni che violino privacy o dati personali di terzi senza consenso
-
-**Gli autori di SAIO**:
-- Non garantiscono compatibilità con i ToS dei provider integrati
-- Non offrono supporto commerciale o di emergenza
-- Non si assumono responsabilità per uso improprio o danni derivati
-- Non raccolgono telemetria: SAIO è 100% locale, nessun dato esce dal tuo
-  sistema (a meno di Cloudflare Tunnel se attivato esplicitamente)
-
-L'integrazione con servizi terzi (Anthropic API, Resend, Cloudflare, Gmail SMTP)
-ricade sotto i ToS di quei servizi, che l'utente deve leggere e accettare
-direttamente con loro.
-
----
 
 ## Contributing
 
-1. Fork il repo + branch feature dal `main`
-2. Codestyle: TypeScript strict, ESLint + tsc --noEmit puliti
-3. Pre-commit: `npm run typecheck && npm run lint`
-4. Test E2E: `npm run dev:all` su clone fresh, claim flow + login
-5. PR descrittiva: cosa cambia, perché, screenshot UI se rilevante
-6. Vedi il file `CLAUDE.md` (presente nel repo) per pattern interni e
-   convenzioni vault Obsidian
+Contributions are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md) for the full guide:
+
+1. Fork the repo
+2. Create a feature branch (`fix/`, `feat/`, `docs/`, ...)
+3. Commit using [Conventional Commits](https://www.conventionalcommits.org/)
+4. Open a Pull Request to `main`
+
+By contributing you agree to license your work under the same terms as the project.
+
+Beta tester? Read [TESTING.md](TESTING.md) for the smoke-test procedure plus tips on how to file useful bug reports.
+
+## Roadmap
+
+See [ROADMAP.md](ROADMAP.md). Highlights:
+
+- v1.0.0-beta (now): Windows working, Linux+macOS code ready, beta tester program open
+- v1.0.0: stable release once 3-OS validated
+- v1.1+: Node SEA single-binary, theme system, vault Git auto-sync
+
+## License
+
+Source-available under [PolyForm Noncommercial License 1.0.0](LICENSE).
+
+**TL;DR**: free to use / modify / redistribute for non-commercial purposes (personal use, research, education, hobby projects, non-profits). Selling the software, bundling it in a paid product, or using it to provide a paid service requires a separate commercial license.
+
+For a commercial license inquiry, contact [lorenzo@revolutionmarketing.us](mailto:lorenzo@revolutionmarketing.us).
+
+## Security
+
+For security issue reports, please follow [SECURITY.md](SECURITY.md) — do **not** open a public issue for security-sensitive problems.
+
+## Code of Conduct
+
+Project participation requires adherence to the [Code of Conduct](CODE_OF_CONDUCT.md) (Contributor Covenant 2.1).
+
+## Credits
+
+- **Author**: Lorenzo Giustarini ([@lorenzo-giustarini](https://github.com/lorenzo-giustarini))
+- **Origin**: internal tool at [Revolution Marketing LLC](https://revolutionmarketing.us)
+- **Built on**: [Tauri](https://tauri.app), [React](https://react.dev), [Vite](https://vitejs.dev), [Express](https://expressjs.com), [TailwindCSS](https://tailwindcss.com), [shadcn/ui](https://ui.shadcn.com), [node-pty](https://github.com/microsoft/node-pty)
+- **Inspired by**: the desire to stop drowning in 8 separate Claude Code terminals on Patch Tuesday
+
+If SAIO is useful to you, a star on GitHub and feedback in [Discussions](https://github.com/lorenzo-giustarini/saio/discussions) are the best way to say thanks.
 
 ---
 
-## Licenza
+<div align="center">
 
-**MIT con clausola no-commercial-resell**:
-- ✓ Uso personale gratuito
-- ✓ Fork + modifiche per uso interno aziendale
-- ✓ Contribution upstream
-- ✗ Rivendita come SaaS commerciale o servizio pagato (anche freemium)
-- ✗ White-label per scopi commerciali
+**Built with care in 🇮🇹 Italy**
 
-Vedi `LICENSE` per dettagli legali.
+</div>
 
----
-
-**Versione corrente**: V15.0 (multi-sprint WS3 → WS14, Aprile 2026).
-**Origine**: Revolution Marketing, dashboard interna pre-public release.

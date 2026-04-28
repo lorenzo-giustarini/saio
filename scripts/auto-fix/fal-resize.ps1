@@ -19,7 +19,7 @@ Write-Output "[fal-resize] Action: log raccomandazione (no-op safe)"
 Write-Output "[fal-resize] Recommendation: cerca config fal.ai nei progetti, riduci size a 1024px max"
 
 # Esempio futuro: cerca config files
-# $configs = Get-ChildItem -Path "C:\Users\info\Desktop" -Recurse -Filter "*.config.ts" -ErrorAction SilentlyContinue |
+# $configs = Get-ChildItem -Path "$env:USERPROFILE\Desktop" -Recurse -Filter "*.config.ts" -ErrorAction SilentlyContinue |
 #     Select-String -Pattern "size:\s*\d{4,}" |
 #     Select-Object -First 5
 # foreach ($c in $configs) {

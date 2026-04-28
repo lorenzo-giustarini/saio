@@ -10,7 +10,7 @@ const execFileAsync = promisify(execFile)
 /**
  * V14.28 — wrapper ssh-keygen.exe per generare coppia ed25519 senza passphrase
  * (uso programmatico). Output in ~/.ssh/<keyName> + ~/.ssh/<keyName>.pub.
- * Commento finale tipo "info@revolutionmarketing.us-<vpsId>-<YYYYMMDD>"
+ * Commento finale tipo "saio@localhost-<vpsId>-<YYYYMMDD>"
  * (formato standard che provider tipo Hetzner/DigitalOcean si aspettano).
  */
 
@@ -50,7 +50,7 @@ export async function generateSshKeyPair(opts: {
 
   // Comment standard
   const ts = new Date().toISOString().slice(0, 10).replace(/-/g, '')
-  const baseEmail = opts.email || 'info@revolutionmarketing.us'
+  const baseEmail = opts.email || 'saio@localhost'
   const comment =
     opts.comment ||
     (opts.vpsId ? `${baseEmail}-${opts.vpsId}-${ts}` : `${baseEmail}-${ts}`)
