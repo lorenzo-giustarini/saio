@@ -1,0 +1,8 @@
+# GitHub Sponsors funding configuration for SAIO
+# Activates the "Sponsor" button on the repo header.
+# Setup steps for the maintainer:
+#   1. Enable GitHub Sponsors at https://github.com/sponsors/lorenzo-giustarini
+#   2. Complete Stripe identity verification (1-2 days)
+#   3. Define sponsor tiers + perks
+#   4. This file already points readers to the sponsor profile.
+github: lorenzo-giustarini
