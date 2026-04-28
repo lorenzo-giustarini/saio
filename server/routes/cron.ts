@@ -166,7 +166,7 @@ async function listTasks(): Promise<CronTask[]> {
 
     // V14.27 — task interni di sistema dashboard (nascosti dalla UI list).
     // Restano accessibili solo via endpoint dedicati (es. /elevator/status).
-    const INTERNAL_TASKS = new Set(['RM-Dashboard-Cron-Manager'])
+    const INTERNAL_TASKS = new Set(['RM-Saio-Tauri-Elevator'])
 
     // V14.27 — load sidecar metadata (long-form details + custom schedule labels)
     const allMeta = await getAllCronMeta()
@@ -530,7 +530,7 @@ export function cronRouter() {
     const available = await isElevatorAvailable()
     res.json({
       available,
-      taskName: 'RM-Dashboard-Cron-Manager',
+      taskName: 'RM-Saio-Tauri-Elevator',
       setupCommand: available ? null : 'pwsh "scripts\\register-elevator.ps1"',
       hint: available
         ? 'Elevator attivo: nessun popup UAC sui toggle cron'
@@ -688,7 +688,7 @@ export function cronRouter() {
 
     if (!(await isElevatorAvailable())) {
       return res.status(503).json({
-        error: 'Rename richiede elevator (RM-Dashboard-Cron-Manager non registrato)',
+        error: 'Rename richiede elevator (RM-Saio-Tauri-Elevator non registrato)',
         errorCode: 'elevator_required',
         hint: 'Esegui setup: pwsh scripts/dev.ps1 con conferma wizard',
       })

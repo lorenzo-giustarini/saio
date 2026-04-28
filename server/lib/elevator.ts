@@ -7,7 +7,9 @@ import { logger } from './logger'
 
 const execAsync = promisify(exec)
 
-export const ELEVATOR_TASK_NAME = 'RM-Dashboard-Cron-Manager'
+// V15.9 WS39: task scheduler dedicato a saio-tauri (separato da SAIO originale
+// `RM-Saio-Tauri-Elevator`). Evita interferenza durante porting Tauri.
+export const ELEVATOR_TASK_NAME = 'RM-Saio-Tauri-Elevator'
 const ELEVATOR_DIR = path.join(process.cwd(), 'data', 'elevator')
 const POLL_INTERVAL_MS = 100
 const TIMEOUT_MS = 30_000 // V14.27 — bumped from 15s; rename (export+delete+create) può impiegare >15s in sistemi lenti

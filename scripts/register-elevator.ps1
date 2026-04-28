@@ -1,11 +1,17 @@
-# Setup one-shot: registra il task RM-Dashboard-Cron-Manager
+# Setup one-shot: registra il task RM-Saio-Tauri-Elevator
 # Da eseguire UNA VOLTA SOLA con UAC. Dopo, la dashboard non chiede più UAC per le op cron.
 
 $ErrorActionPreference = 'Stop'
 
 $ScriptRoot = $PSScriptRoot
-$ElevatorScript = Join-Path $ScriptRoot 'elevator.ps1'
-$TaskName = 'RM-Dashboard-Cron-Manager'
+# V15.9 WS39: usa elevator-windows.ps1 dedicato saio-tauri (legacy elevator.ps1
+# eliminato dopo refactor PAL).
+$ElevatorScript = Join-Path $ScriptRoot 'elevator-windows.ps1'
+if (!(Test-Path $ElevatorScript)) {
+    # Fallback al vecchio nome se rinominato non ancora
+    $ElevatorScript = Join-Path $ScriptRoot 'elevator.ps1'
+}
+$TaskName = 'RM-Saio-Tauri-Elevator'
 
 if (!(Test-Path $ElevatorScript)) {
     Write-Host "ERROR: elevator.ps1 not found at: $ElevatorScript" -ForegroundColor Red

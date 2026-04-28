@@ -3,7 +3,7 @@
 
 $ErrorActionPreference = 'Stop'
 $dashboardRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
-$elevatorTaskName = 'RM-Dashboard-Cron-Manager'
+$elevatorTaskName = 'RM-Saio-Tauri-Elevator'
 $elevatorDir = Join-Path $dashboardRoot 'data\elevator'
 
 # Check elevator esiste

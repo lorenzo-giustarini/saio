@@ -34,7 +34,7 @@ function Test-PythonDeps {
     } catch { return $false }
 }
 function Test-CronManager {
-    $null = & schtasks.exe /query /tn 'RM-Dashboard-Cron-Manager' 2>$null
+    $null = & schtasks.exe /query /tn 'RM-Saio-Tauri-Elevator' 2>$null
     return ($LASTEXITCODE -eq 0)
 }
 
@@ -116,7 +116,7 @@ if ('cron-manager' -in $missing) {
     # Stop-parsing token + variabile interpolata
     $user = $env:USERNAME
     Write-Host "  Tra poco vedrai il popup UAC: clicca SI per autorizzare." -ForegroundColor Gray
-    $argList = @('/create', '/tn', 'RM-Dashboard-Cron-Manager', '/tr', $tr, '/sc', 'ONCE', '/st', '23:59', '/sd', '01/01/2099', '/ru', $user, '/rl', 'HIGHEST', '/f')
+    $argList = @('/create', '/tn', 'RM-Saio-Tauri-Elevator', '/tr', $tr, '/sc', 'ONCE', '/st', '23:59', '/sd', '01/01/2099', '/ru', $user, '/rl', 'HIGHEST', '/f')
     try {
         $p = Start-Process -FilePath schtasks.exe -ArgumentList $argList -Verb RunAs -Wait -PassThru -WindowStyle Hidden
         if ($null -eq $p -or $p.ExitCode -ne 0) {
