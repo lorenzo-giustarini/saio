@@ -1,27 +1,31 @@
 {
-  "name": "revolution-dashboard",
+  "name": "saio-tauri",
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "Dashboard operativa interna Revolution Marketing — decisioni, task, orchestrator multi-terminal",
+  "description": "SAIO — Smart AI Office. Cross-platform desktop app (Win10/11 + Ubuntu + macOS) via Tauri 2.",
   "scripts": {
-    "predev": "pwsh -NoProfile -File scripts/check-vite-cache.ps1",
+    "predev": "node scripts/check-vite-cache.mjs",
     "dev": "vite",
     "dev:server": "tsx watch server/index.ts",
-    "predev:all": "pwsh -NoProfile -File scripts/check-vite-cache.ps1",
+    "predev:all": "node scripts/check-vite-cache.mjs",
     "dev:all": "concurrently -n vite,server -c cyan,magenta \"npm run dev\" \"npm run dev:server\"",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "orchestrator:dry": "python orchestrator/orchestrator.py --dry-run",
-    "backup": "pwsh -File scripts/backup-data.ps1",
+    "backup": "tsx scripts/cron-runner.ts vault-backup",
     "claim:reissue": "tsx scripts/claim-reissue.ts",
     "auth:reset": "tsx scripts/auth-reset.ts",
     "setup:deps": "node scripts/setup-deps-runner.js",
     "diag:orchestrator": "tsx scripts/diag-orchestrator.ts",
     "docs:cloudflare": "tsx scripts/generate-cloudflare-guide-pdf.ts",
-    "postinstall": "node scripts/setup-deps-runner.js --check-only || true"
+    "postinstall": "node scripts/setup-deps-runner.js --check-only || true",
+    "tauri": "tauri",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build",
+    "sidecar:bundle": "tsx scripts/build-sidecar.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
@@ -94,6 +98,7 @@
     "zustand": "^5.0.1"
   },
   "devDependencies": {
+    "@tauri-apps/cli": "^2",
     "@types/bcryptjs": "^2.4.6",
     "@types/cookie-parser": "^1.4.10",
     "@types/express": "^5.0.0",
@@ -107,6 +112,7 @@
     "@vitejs/plugin-react": "^4.3.3",
     "autoprefixer": "^10.4.20",
     "concurrently": "^9.0.1",
+    "esbuild": "^0.24.0",
     "eslint": "^9.14.0",
     "pdfkit": "^0.18.0",
     "postcss": "^8.4.49",
@@ -114,6 +120,15 @@
     "tsx": "^4.19.2",
     "typescript": "^5.6.3",
     "vite": "^6.0.0"
+  },
+  "dependenciesAdditional": {
+    "@tauri-apps/api": "^2",
+    "@tauri-apps/plugin-dialog": "^2",
+    "@tauri-apps/plugin-fs": "^2",
+    "@tauri-apps/plugin-os": "^2",
+    "@tauri-apps/plugin-process": "^2",
+    "@tauri-apps/plugin-shell": "^2",
+    "@tauri-apps/plugin-updater": "^2"
   },
   "engines": {
     "node": ">=20"

@@ -1,0 +1,82 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "SAIO",
+  "version": "1.0.0",
+  "identifier": "us.revolutionmarketing.saio",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://localhost:3030",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "SAIO - Smart AI Office",
+        "width": 1280,
+        "height": 800,
+        "minWidth": 1024,
+        "minHeight": 600,
+        "decorations": true,
+        "transparent": false,
+        "center": true,
+        "resizable": true,
+        "fullscreen": false,
+        "alwaysOnTop": false,
+        "theme": "Dark"
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' http://localhost:3030 http://127.0.0.1:3030 ws://127.0.0.1:3030 ws://127.0.0.1:3031; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: http://localhost:3030 http://127.0.0.1:3030 http://127.0.0.1:3031; connect-src 'self' http://localhost:3030 http://127.0.0.1:3030 http://127.0.0.1:3031 ws://127.0.0.1:3030 ws://127.0.0.1:3031; font-src 'self' data:; object-src 'none'; frame-ancestors 'none'"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "category": "DeveloperTool",
+    "copyright": "Copyright © 2026 Revolution Marketing. All rights reserved.",
+    "shortDescription": "Smart AI Office — orchestrazione progetti AI cross-platform",
+    "longDescription": "SAIO è una dashboard desktop per orchestrare progetti AI multi-provider (Claude, Gemini, OpenAI), gestire cron locali, automazioni e vault Obsidian. Cross-platform Win10/11 + Ubuntu + macOS via Tauri 2.",
+    "targets": ["nsis", "deb", "appimage", "dmg", "app"],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "externalBin": [
+      "binaries/saio-server"
+    ],
+    "windows": {
+      "nsis": {
+        "installMode": "perMachine",
+        "languages": ["English", "Italian"],
+        "displayLanguageSelector": true
+      }
+    },
+    "macOS": {
+      "minimumSystemVersion": "11.0",
+      "frameworks": [],
+      "exceptionDomain": ""
+    },
+    "linux": {
+      "deb": {
+        "depends": ["libwebkit2gtk-4.1-0", "libgtk-3-0"]
+      },
+      "appimage": {
+        "bundleMediaFramework": false
+      }
+    }
+  },
+  "plugins": {
+    "updater": {
+      "active": false,
+      "endpoints": [
+        "https://github.com/RevolutionMarketing/saio-tauri/releases/latest/download/latest.json"
+      ],
+      "dialog": true,
+      "pubkey": "<TODO_GENERATE_AT_FIRST_RELEASE>"
+    }
+  }
+}
