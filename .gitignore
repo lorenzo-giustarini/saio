@@ -109,3 +109,8 @@ src-tauri/target/
 src-tauri/Cargo.lock
 src-tauri/binaries/saio-server-*
 src-tauri/gen/
+
+# V15.9 WS39 — TypeScript/Vite incremental build artifacts
+*.tsbuildinfo
+vite.config.d.ts
+vite.config.js

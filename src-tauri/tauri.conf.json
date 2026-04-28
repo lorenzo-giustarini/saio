@@ -45,11 +45,16 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
+    "resources": [
+      "../scripts/register-elevator.ps1",
+      "../scripts/elevator-windows.ps1"
+    ],
     "windows": {
       "nsis": {
         "installMode": "perMachine",
         "languages": ["English", "Italian"],
-        "displayLanguageSelector": true
+        "displayLanguageSelector": true,
+        "installerHooks": "installer-hooks.nsh"
       }
     },
     "macOS": {

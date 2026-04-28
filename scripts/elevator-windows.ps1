@@ -48,6 +48,27 @@ function Write-Result($obj) {
     $obj | ConvertTo-Json -Depth 5 | Set-Content -Path $resultFile -Encoding UTF8
 }
 
+# V15.9 WS39 hotfix — backward-compat alias map: il backend `server/lib/elevator.ts`
+# usa nomi op brevi (`disable`, `enable`, `run`, `winget-upgrade`, ...) ereditati
+# dal SAIO originale. Il PS1 ha contratto PAL canonico con prefisso `task-`. Mappiamo.
+$opAliases = @{
+    'disable'         = 'task-disable'
+    'enable'          = 'task-enable'
+    'run'             = 'task-run'
+    'create'          = 'task-create'
+    'delete'          = 'task-delete'
+    'rename'          = 'task-rename'
+    'export-xml'      = 'task-export-xml'
+    'create-from-xml' = 'task-create-from-xml'
+    'set-comment'     = 'task-set-comment'
+    'winget-upgrade'  = 'pkg-upgrade'
+}
+if ($opAliases.ContainsKey($cmd.op)) {
+    $aliasedOp = $opAliases[$cmd.op]
+    Write-ElevLog "op alias: $($cmd.op) -> $aliasedOp"
+    $cmd | Add-Member -NotePropertyName op -NotePropertyValue $aliasedOp -Force
+}
+
 # Whitelist
 $allowedOps = @(
     'task-enable', 'task-disable', 'task-run', 'task-create', 'task-delete',
