@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Outlet } from 'react-router-dom'
 import { Menu } from 'lucide-react'
 import { Sidebar } from './Sidebar'
@@ -9,6 +10,7 @@ import { DepsCheckBanner } from '@/components/system/DepsCheckBanner'
 import { PerfAlert } from '@/components/system/PerfAlert'
 
 export function Layout() {
+  const { t } = useTranslation('nav')
   const [mobileOpen, setMobileOpen] = useState(false)
 
   return (
@@ -20,8 +22,12 @@ export function Layout() {
 
       {/* Mobile sidebar drawer */}
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-        <SheetContent side="left" className="p-0 w-64">
-          <SheetTitle className="sr-only">Menu di navigazione</SheetTitle>
+        <SheetContent
+          side="left"
+          className="p-0 w-72 max-w-[85vw]"
+          onCloseAutoFocus={(e) => e.preventDefault()}
+        >
+          <SheetTitle className="sr-only">{t('mobile.open_menu')}</SheetTitle>
           <Sidebar />
         </SheetContent>
       </Sheet>
@@ -31,22 +37,20 @@ export function Layout() {
           <Button
             variant="ghost"
             size="icon"
-            className="lg:hidden m-2"
+            className="lg:hidden m-2 min-h-11 min-w-11"
             onClick={() => setMobileOpen(true)}
-            aria-label="Apri menu"
+            aria-label={t('mobile.open_menu')}
           >
             <Menu className="w-5 h-5" />
           </Button>
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             <TopBar />
           </div>
         </div>
-        {/* V15.0 WS22 — Alert CPU saturo > 100% sostenuto (top priority, sticky) */}
         <PerfAlert />
-        {/* V15.0 WS10 — Banner deps mancanti (auto-hide se tutto ok o dismissed) */}
         <DepsCheckBanner />
         <main className="flex-1 overflow-y-auto scrollbar-thin">
-          <div className="container mx-auto px-4 md:px-6 py-4 md:py-8 animate-fade-in max-w-full">
+          <div className="container mx-auto px-3 sm:px-4 md:px-6 py-3 sm:py-4 md:py-8 animate-fade-in max-w-full">
             <Outlet />
           </div>
         </main>
