@@ -1,3 +1,9 @@
+// V15.9 WS43.3 — saio-tauri is ESM ("type":"module") but node-pty native
+// addon uses runtime require() to load build/Release/pty.node. Provide a
+// CJS-style require for the ESM module graph so the native binding loads.
+import { createRequire } from 'node:module'
+const require = createRequire(import.meta.url)
+
 import * as pty from 'node-pty'
 import fs from 'node:fs'
 import fsp from 'node:fs/promises'

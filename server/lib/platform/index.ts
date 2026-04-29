@@ -10,8 +10,15 @@
  * Lazy loading per evitare di caricare codice non-applicabile (es. WindowsTaskScheduler
  * che importa schtasks su una macchina Linux).
  */
+// V15.9 WS43.3 — saio-tauri is ESM ("type":"module"). createRequire so the
+// lazy-loaded platform-specific modules can use sync require() to avoid
+// turning getPlatform() into an async function (it's called from many
+// non-async callsites).
+import { createRequire } from 'node:module'
 import os from 'node:os'
 import type { IPlatform, Platform } from './types'
+
+const require = createRequire(import.meta.url)
 
 let _instance: IPlatform | null = null
 
@@ -20,19 +27,16 @@ export function getPlatform(): IPlatform {
   const p = os.platform() as Platform
   switch (p) {
     case 'win32': {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const { WindowsPlatform } = require('./windows') as typeof import('./windows')
       _instance = new WindowsPlatform()
       break
     }
     case 'linux': {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const { LinuxPlatform } = require('./linux') as typeof import('./linux')
       _instance = new LinuxPlatform()
       break
     }
     case 'darwin': {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const { MacOSPlatform } = require('./macos') as typeof import('./macos')
       _instance = new MacOSPlatform()
       break
