@@ -218,24 +218,26 @@ export default function EnrollTotpPage() {
               disabled={submitting}
             />
           </div>
-          <div className="flex items-center gap-2 pt-2 border-t border-border">
-            <input
-              type="checkbox"
-              id="trust-device-enroll"
-              checked={trustDevice}
-              onChange={(e) => setTrustDevice(e.target.checked)}
-              disabled={submitting}
-            />
-            <label htmlFor="trust-device-enroll" className="text-sm cursor-pointer flex-1">
-              {t('auth:totp.trust_device')}
-            </label>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 pt-2 border-t border-border">
+            <div className="flex items-center gap-2 flex-1 min-w-0">
+              <input
+                type="checkbox"
+                id="trust-device-enroll"
+                checked={trustDevice}
+                onChange={(e) => setTrustDevice(e.target.checked)}
+                disabled={submitting}
+              />
+              <label htmlFor="trust-device-enroll" className="text-sm cursor-pointer flex-1 min-w-0">
+                {t('auth:totp.trust_device')}
+              </label>
+            </div>
             <select
               value={trustDays}
               onChange={(e) =>
                 setTrustDays(Number(e.target.value) as 1 | 3 | 7 | 15 | 30)
               }
               disabled={!trustDevice || submitting}
-              className="text-xs bg-muted px-2 py-1 rounded border border-border disabled:opacity-40"
+              className="text-xs bg-muted px-2 py-2 sm:py-1 rounded border border-border disabled:opacity-40 w-full sm:w-auto"
             >
               <option value={1}>{t('auth:totp.trust_days_1')}</option>
               <option value={3}>{t('auth:totp.trust_days_3')}</option>

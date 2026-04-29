@@ -79,7 +79,7 @@ export function AccountSwitcher() {
         <Button
           variant="ghost"
           size="sm"
-          className="gap-2 h-9 px-3"
+          className="gap-2 h-10 px-3 min-w-[2.5rem]"
           aria-label="Account AI attivo"
         >
           <Sparkles className="w-3.5 h-3.5 text-violet-400" />
@@ -102,7 +102,7 @@ export function AccountSwitcher() {
           <ChevronDown className="w-3 h-3 text-muted-foreground" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-80 p-2">
+      <PopoverContent align="end" className="w-80 max-w-[calc(100vw-1.5rem)] p-2">
         {/* V13.3-T2: rimosso "Gestisci" in header — link unico in footer */}
         <div className="px-2 py-1.5 border-b border-border mb-1">
           <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">

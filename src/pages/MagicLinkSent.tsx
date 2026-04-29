@@ -77,13 +77,13 @@ export default function MagicLinkSentPage() {
         <div className="pt-3 border-t border-border space-y-3">
           {secondsLeft > 0 ? (
             <>
-              <div className="text-xs text-muted-foreground">
+              <div className="text-xs text-muted-foreground break-words">
                 <Trans
                   t={t}
                   i18nKey={'auth:magic_sent.countdown'}
                   defaults="Resend available in <strong>{{count}}s</strong>"
                   values={{ count: secondsLeft }}
-                  components={{ strong: <span className="font-mono font-medium text-foreground" /> }}
+                  components={{ strong: <span className="font-mono font-medium text-foreground whitespace-nowrap" /> }}
                 />
               </div>
               <div className="w-full bg-muted h-1 rounded-full overflow-hidden">

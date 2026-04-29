@@ -38,8 +38,14 @@ export function TopBar() {
   })
 
   const localeTag = LOCALE_MAP[i18n.resolvedLanguage || 'en'] || 'en-US'
+  // V15.9 WS43.1 — Mobile: keep just day+month so the topbar fits at 320px
+  // even when LanguageSwitcher and AccountSwitcher sit alongside.
   const dateLabel = now.toLocaleDateString(localeTag, {
     weekday: 'short',
+    day: '2-digit',
+    month: 'short',
+  })
+  const dateLabelMobile = now.toLocaleDateString(localeTag, {
     day: '2-digit',
     month: 'short',
   })
@@ -53,8 +59,9 @@ export function TopBar() {
   return (
     <header className="h-14 border-b border-border bg-card/40 backdrop-blur-sm flex items-center justify-between px-3 sm:px-4 md:px-6 gap-2">
       <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
-        <div className="text-[11px] sm:text-xs md:text-sm min-w-0">
-          <span className="font-medium capitalize">{dateLabel}</span>
+        <div className="text-[11px] sm:text-xs md:text-sm min-w-0 truncate">
+          <span className="font-medium capitalize sm:hidden">{dateLabelMobile}</span>
+          <span className="font-medium capitalize hidden sm:inline">{dateLabel}</span>
           <span className="text-muted-foreground ml-1 sm:ml-2">{timeLabel}</span>
         </div>
       </div>

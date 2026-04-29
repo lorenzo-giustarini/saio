@@ -33,7 +33,7 @@ export function NotificationPopover() {
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-80 p-0">
+      <PopoverContent align="end" className="w-80 max-w-[calc(100vw-1.5rem)] p-0">
         <div className="flex items-center justify-between p-3 border-b border-border">
           <div className="flex items-center gap-2">
             <Bell className="w-4 h-4 text-muted-foreground" />
