@@ -328,7 +328,7 @@ export function AddVpsWizard({ open, onClose }: { open: boolean; onClose: () => 
                 <Input
                   value={ip}
                   onChange={(e) => setIp(e.target.value)}
-                  placeholder="46.224.60.230"
+                  placeholder="203.0.113.42 or vps.example.com"
                 />
               </div>
               <div className="w-32">

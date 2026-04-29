@@ -4,7 +4,7 @@ import { logger } from './logger'
 /**
  * V14.28 — multi-VPS iterator. Esegue `fn` su ogni VPS del registry, gestendo
  * errori per-server senza far crashare l'intero batch. Usato dai cron T4
- * (VPS-Pull, VPS-Errors, ecc) per non hardcodare 46.224.60.230.
+ * (VPS-Pull, VPS-Errors, ecc) per non hardcodare gli IP nei singoli script.
  */
 
 export interface VpsIterResult<T> {

@@ -72,13 +72,15 @@ const WINDOWS_ENV_EXPECTED = [
   'VERCEL_TOKEN',
 ]
 
+// V15.9 WS43.2 — generic placeholders only. Per-installation customization
+// happens via settings.json + .env, never inlined in this file.
 const VAULT_REFERENCES: Array<{ name: string; scope: string; source: CredentialInfo['source'] }> = [
-  { name: 'N8N MCP JWT', scope: 'n8n3.dontouch.us — no expiry, in settings.json mcpServers', source: 'settings.json env' },
+  { name: 'n8n MCP JWT', scope: 'configured via settings.json mcpServers (no expiry)', source: 'settings.json env' },
   { name: 'SSH VPS key', scope: 'SSH key configured via data/ssh-inventory.json (gitignored)', source: 'file' },
-  { name: 'Supabase admin secret', scope: 'onweb24-workflows/.local_secrets/supabase_admin_secret.txt', source: 'file' },
-  { name: 'Supabase anon key', scope: 'onweb24-workflows/.local_secrets/supabase_anon_key.txt', source: 'file' },
-  { name: 'Supabase service role', scope: 'onweb24-workflows/.local_secrets/supabase_service_role_key.txt', source: 'file' },
-  { name: 'Pabbly MCP bridge', scope: 'connect.pabbly.com — in settings.json mcpServers', source: 'settings.json env' },
+  { name: 'Supabase admin secret', scope: 'configured via local secrets folder (gitignored)', source: 'file' },
+  { name: 'Supabase anon key', scope: 'configured via local secrets folder (gitignored)', source: 'file' },
+  { name: 'Supabase service role', scope: 'configured via local secrets folder (gitignored)', source: 'file' },
+  { name: 'MCP bridge token', scope: 'configured via settings.json mcpServers', source: 'settings.json env' },
 ]
 
 function loadWindowsEnv(): CredentialInfo[] {

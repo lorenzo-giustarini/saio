@@ -19,9 +19,10 @@ if (!(Test-Path $vaultErrors)) { New-Item -ItemType Directory -Path $vaultErrors
 "[$(Get-Date -Format 'o')] Run start" | Add-Content $runLog
 
 # n8n endpoint + recupero API key via SSH
-$n8nUrl = 'https://n8n3.dontouch.us'
-$sshKey = Join-Path $env:USERPROFILE '.ssh\claude_vps'
-$vpsHost = 'root@46.224.60.230'
+# Configurazione tramite env var (override) oppure default placeholder.
+$n8nUrl = if ($env:SAIO_N8N_URL) { $env:SAIO_N8N_URL } else { 'https://n8n.example.com' }
+$sshKey = if ($env:SAIO_VPS_SSH_KEY) { $env:SAIO_VPS_SSH_KEY } else { Join-Path $env:USERPROFILE '.ssh\saio_vps' }
+$vpsHost = if ($env:SAIO_VPS_HOST) { $env:SAIO_VPS_HOST } else { 'root@vps.example.com' }
 
 if (!(Test-Path $sshKey)) {
     "[$(Get-Date -Format 'o')] FAIL: SSH key not found at $sshKey" | Add-Content $runLog
