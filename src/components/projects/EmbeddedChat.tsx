@@ -402,6 +402,44 @@ export function EmbeddedChat({ projectId, className }: EmbeddedChatProps) {
       setWsTick((t) => t + 1)
     }
 
+    // V15.9 WS44 — Browser-style copy/paste in xterm:
+    //   Ctrl+C / Cmd+C  → copia testo selezionato in clipboard. Senza selezione,
+    //                      lascia passare al PTY come SIGINT (interrompe comando).
+    //   Ctrl+Shift+C    → sempre copia (anche con SIGINT pending).
+    //   Ctrl+V / Cmd+V  → paste dalla clipboard nel PTY.
+    // Cross-OS: ctrlKey su Win/Linux, metaKey (Cmd) su macOS. detectMac via
+    // navigator.platform (deprecato ma più affidabile di userAgent in Tauri WebView).
+    term.attachCustomKeyEventHandler((event: KeyboardEvent): boolean => {
+      if (event.type !== 'keydown') return true
+      const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform || '')
+      const cmdLike = event.ctrlKey || (isMac && event.metaKey)
+      if (!cmdLike) return true
+      const key = event.key.toLowerCase()
+      // Ctrl+Shift+C / Cmd+Shift+C → sempre copia
+      if (event.shiftKey && key === 'c') {
+        const sel = term.getSelection()
+        if (sel) navigator.clipboard?.writeText(sel).catch(() => { /* clipboard denied */ })
+        return false
+      }
+      // Ctrl+C / Cmd+C → copia se selezione, altrimenti SIGINT (forward al PTY)
+      if (!event.shiftKey && key === 'c') {
+        const sel = term.getSelection()
+        if (sel) {
+          navigator.clipboard?.writeText(sel).catch(() => { /* clipboard denied */ })
+          return false
+        }
+        return true
+      }
+      // Ctrl+V / Cmd+V → paste dalla clipboard
+      if (!event.shiftKey && key === 'v') {
+        navigator.clipboard?.readText().then((t) => {
+          if (t) term.paste(t)
+        }).catch(() => { /* clipboard denied */ })
+        return false
+      }
+      return true
+    })
+
     term.onData((data) => {
       if (ws.readyState === WebSocket.OPEN) {
         ws.send(JSON.stringify({ type: 'data', data }))
