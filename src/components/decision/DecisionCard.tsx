@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { Check, X, SkipForward, MessageSquare, ChevronDown, ChevronUp, Flag, Folder, Lightbulb, AlertTriangle as AlertIcon, HelpCircle } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { Check, X, SkipForward, MessageSquare, ChevronDown, ChevronUp, Flag, Folder, Lightbulb, AlertTriangle as AlertIcon, HelpCircle, ExternalLink } from 'lucide-react'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
@@ -16,6 +17,8 @@ interface DecisionCardProps {
   briefId: string
   decision: Decision
   index: number
+  /** V15.9 WS44 (bug #7) — projectId del brief; se presente render bottone "Apri progetto" deep link a /projects/:projectId. */
+  projectId?: string
 }
 
 const priorityColors: Record<string, string> = {
@@ -25,7 +28,7 @@ const priorityColors: Record<string, string> = {
   low: 'bg-muted/50 text-muted-foreground',
 }
 
-export function DecisionCard({ briefId, decision, index }: DecisionCardProps) {
+export function DecisionCard({ briefId, decision, index, projectId }: DecisionCardProps) {
   const [riscExpanded, setRiscExpanded] = useState(false)
   const { setAnswer, setComment, getDraft } = useDraftStore()
   const draft = getDraft(briefId, decision.id)
@@ -67,6 +70,22 @@ export function DecisionCard({ briefId, decision, index }: DecisionCardProps) {
               <Flag className="w-3 h-3" />
               {decision.priority === 'urgent' ? 'Urgente' : decision.priority === 'high' ? 'Alta priorità' : decision.priority}
             </Badge>
+          )}
+          {projectId && (
+            // V15.9 WS44 (bug #7) — deep link al detail del progetto correlato.
+            // Aiuta l'utente che riceve un brief a capire il contesto della richiesta
+            // saltando direttamente al terminal embedded del progetto.
+            <Link to={`/projects/${encodeURIComponent(projectId)}`} className="no-underline">
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-6 px-2 gap-1 text-xs hover:bg-primary/10 hover:border-primary/40"
+                title={`Apri progetto ${projectId}`}
+              >
+                <ExternalLink className="w-3 h-3" />
+                Apri progetto
+              </Button>
+            </Link>
           )}
           <span className="ml-auto text-[10px] text-muted-foreground">#{index + 1}</span>
         </div>

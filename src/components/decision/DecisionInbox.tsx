@@ -884,7 +884,7 @@ export function DecisionInbox({ brief, defaultCollapsed }: DecisionInboxProps) {
       {/* Decision cards */}
       <div className="space-y-4">
         {brief.decisions.map((d, i) => (
-          <DecisionCard key={d.id} briefId={brief.id} decision={d} index={i} />
+          <DecisionCard key={d.id} briefId={brief.id} decision={d} index={i} projectId={brief.projectId} />
         ))}
       </div>
 
