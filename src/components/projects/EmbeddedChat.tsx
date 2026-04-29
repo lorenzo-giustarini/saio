@@ -493,6 +493,13 @@ export function EmbeddedChat({ projectId, className }: EmbeddedChatProps) {
     try { await fetch(`/api/pty/${projectId}`, { method: 'DELETE' }) } catch { /* ignore */ }
     setAppliedModel(model)
     setAppliedPerm(permissionMode)
+    // V15.9 WS44 (bug #6) — applySettings deve preservare la conversazione tramite
+    // `claude --continue` (default). Resettiamo forceNew=false per evitare il bug
+    // sticky: se l'utente prima preme "Inizia da zero" (setForceNew(true)) e poi
+    // cambia model/permissionMode + "Riavvia sessione", senza questo reset il
+    // respawn rimaneva fresh perdendo tutto il contesto della chat.
+    // Solo confirmStartFresh deve forzare fresh; applySettings è restart preservante.
+    setForceNew(false)
     setStatus('connecting')
     setNonce((n) => n + 1)
   }
